@@ -4,6 +4,8 @@
  */
 package edu.ncsu.csc573.project2.server;
 
+import edu.ncsu.csc573.project2.util.Constants;
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
 /**
@@ -16,14 +18,30 @@ public class Server {
     String fileName; //The name of the file where the data will be written
     float p;    //The packet loss probability
     DatagramSocket serverSocket;    //The server side datagram socket
-    byte receiveBuffer[];       //The receive buffer
+    byte recvBuffer[];       //The receive buffer
     byte sendBuffer[];          //The send buffer
     public Server(int portNumber, String fileName, float p) {
         this.portNumber = portNumber;
         this.fileName = fileName;
         this.p = p;
 
+        sendBuffer = new byte[Constants.kMaxBufferSize];
+        recvBuffer = new byte[Constants.kMaxBufferSize];
+        try {
+            serverSocket = new DatagramSocket(Constants.kServerPortNumber);
+        } catch (Exception e) {
+            System.err.println("Failed to create server datagram socket");
+        }
         //Server operation code
+        while (true) {
+            DatagramPacket receivePacket = new DatagramPacket(recvBuffer, recvBuffer.length);
+            try {
+                serverSocket.receive(receivePacket);
+                System.out.println("Received : "  + new String(receivePacket.getData()));
+            } catch (Exception e) {
+                System.err.println("Failed to receive datagram socket");
+            }
+        }
     }
    
     public static void main(String[] args) {
