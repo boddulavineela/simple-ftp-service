@@ -49,11 +49,10 @@ public class Client {
           //Client operation code
         LinkedList<Segment> segments = this.readFileContentsAsSegments();
 
-        for (int i = 0; i < segments.size(); ++i) {
+        /*for (int i = 0; i < segments.size(); ++i) {
             System.out.println(segments.get(i).getSegment().length());
             System.out.println(Segment.parseFromString(segments.get(i).getSegment()).getSegment().length());
-        }
-        
+        }*/
         sendData(segments);
     }
    
@@ -72,7 +71,7 @@ public class Client {
             while (len > 0) {
                 byte segmentData[] = new byte[mss - Constants.kSegmentHeaderSize];
                 bis.read(segmentData, 0, segmentData.length);
-                Segment currentSegment = new Segment(mss, Constants.kDatatype, (char)0, segmentData);
+                Segment currentSegment = new Segment(Constants.kDatatype, (char)0, segmentData);
                 segments.add(currentSegment);   
                 len -= segmentData.length;
             }
@@ -84,6 +83,7 @@ public class Client {
     }
     
     public void sendData(LinkedList<Segment> segments) {
+        System.out.println("Number of segments = " + segments.size());
         boolean sent[] = new boolean[segments.size()];
         for (int i = 0; i < sent.length; ++i) {
             sent[i] = false;
@@ -96,6 +96,16 @@ public class Client {
         } catch (Exception e) {
             
         }
+        //Send the MSS to the server
+        String mssString = "" + mss;
+        try {
+            DatagramPacket mssPacket = new DatagramPacket(mssString.getBytes(), mssString.length(), IPAddress, serverPortNumber);
+
+            clientSocket.send(mssPacket);
+        } catch (Exception e) {
+            System.err.println("Could not send MSS to the server");
+        }
+        //Send the segments to the server using the Go Back N protocol
 
         while (! sent[sent.length - 1]) {
             try {
@@ -105,6 +115,7 @@ public class Client {
                                                                    IPAddress, serverPortNumber);
                     clientSocket.send(sendPacket);
                     sent[i] = true;
+                    System.out.println ("Segment " + i + " sent");
                 }
 
                 /*for (int i = low; i < high; ++i) {
@@ -115,10 +126,12 @@ public class Client {
                     } catch (Exception e) {
                     }   
                 }*/
+                System.out.println("Low : " + low + " , High : " + high);
                 if (low < segments.size() - 1) {
                     low++;
+                    
                 }
-                if (high < segments.size() - 1) {
+                if (high <= segments.size() - 1) {
                     high++;
                 }
             } catch (Exception e) {
@@ -132,7 +145,7 @@ public class Client {
             System.err.println("Usage : java Client <server-host-name> <server-port#> " + 
                                "<file-name> <N> <MSS>");
         }*/
-        Client client = new Client("127.0.0.1", Constants.kServerPortNumber, "/Users/svpendse1/Desktop/milestone1.txt", 100, 100);
+        Client client = new Client("127.0.0.1", Constants.kServerPortNumber, "/Users/svpendse1/Documents/ncsu_courses/internet_protocols/project/part1/rfcpeersystem/rfcpeersystem/resources/rfc/rfc861.txt", 5, 100);
         /*Client client = new Client(args[0], Integer.parseInt(args[1]),
                                    args[2], Integer.parseInt(args[3]), 
                                    Integer.parseInt(args[4]));*/

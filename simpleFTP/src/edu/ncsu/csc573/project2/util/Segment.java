@@ -16,27 +16,27 @@ import java.util.Scanner;
  */
 public class Segment {
     static int sequence_counter = 0; //The sequence counter;
-    int mss;   //The total segment size in bytes;
+    //int mss;   //The total segment size in bytes;
     SegmentHeader header;   //The Segment Header
     byte data[];    //The segment data
     boolean acknowledged;   //Indicates whether this segment has been acknowledged or not
-    public Segment(int mss, char segmentType, char checksum, byte data[]) {
-        this.mss = mss;
+    public Segment(char segmentType, char checksum, byte data[]) {
+        //this.mss = mss;
         this.data = data;
         this.acknowledged = false;
-        if (data.length > (mss - Constants.kSegmentHeaderSize)) {
+        /*if (data.length > (mss - Constants.kSegmentHeaderSize)) {
             System.err.println("Segment size cannot exceed " + mss + " bytes");
-        }
+        }*/
         header = new SegmentHeader(sequence_counter, checksum, segmentType);
         sequence_counter++;
     }
    
-    public Segment(int sequence_number, int mss, char segmentType, char checksum, byte data[]) {
-        this.mss = mss;
+    public Segment(int sequence_number, char segmentType, char checksum, byte data[]) {
+        //this.mss = mss;
         this.data = data;
-        if (data.length > (mss - Constants.kSegmentHeaderSize)) {
+        /*if (data.length > (mss - Constants.kSegmentHeaderSize)) {
             System.err.println("Segment size cannot exceed " + mss + " bytes");
-        }
+        }*/
         header = new SegmentHeader(sequence_number, checksum, segmentType);
 
     }
@@ -78,13 +78,15 @@ public class Segment {
     }
 
     public String toString() {
-        return "" + "(" + header.toString() + ") " + ", MSS = " + mss + ", Data = " + new String(data);
+        return "" + "(" + header.toString() + ") " + ", Data = " + new String(data);
     }
 
     public String getSegment() {
         StringBuffer buffer = new StringBuffer();
         buffer.append(header.getSegmentHeader());
-        buffer.append(new String(data));
+        if (data != null) {
+            buffer.append(new String(data));
+        }
         return buffer.toString(); 
     }
 
@@ -102,7 +104,7 @@ public class Segment {
                contents += (char)c;
             }
             
-            Segment segment = new Segment(seq, Constants.kSegmentHeaderSize + contents.length(),
+            Segment segment = new Segment(seq,
                                           type, cksum, contents.getBytes());
             return segment;
         } catch (Exception e) {
