@@ -145,7 +145,7 @@ public class Client {
             System.err.println("Usage : java Client <server-host-name> <server-port#> " + 
                                "<file-name> <N> <MSS>");
         }*/
-        Client client = new Client("127.0.0.1", Constants.kServerPortNumber, "/Users/svpendse1/Documents/ncsu_courses/internet_protocols/project/part1/rfcpeersystem/rfcpeersystem/resources/rfc/rfc861.txt", 5, 100);
+        Client client = new Client("127.0.0.1", Constants.kServerPortNumber, "resources/rfc861.txt", 5, 100);
         /*Client client = new Client(args[0], Integer.parseInt(args[1]),
                                    args[2], Integer.parseInt(args[3]), 
                                    Integer.parseInt(args[4]));*/
