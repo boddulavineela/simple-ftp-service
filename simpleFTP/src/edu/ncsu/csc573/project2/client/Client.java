@@ -40,19 +40,21 @@ public class Client {
         this.mss = mss;
 
         sendBuffer = new byte[mss];
-        recvBuffer = new byte[n * mss];
+        recvBuffer = new byte[mss];
         try {
             clientSocket = new DatagramSocket();
         } catch (Exception e) {
             System.err.println("Failed to create client datagram socket");
         }
           //Client operation code
-        LinkedList<Segment> segments = readFileContentsAsSegments();
+        LinkedList<Segment> segments = this.readFileContentsAsSegments();
 
         for (int i = 0; i < segments.size(); ++i) {
-            System.out.println(segments.get(i).toString());
+            System.out.println(segments.get(i).getSegment().length());
+            System.out.println(Segment.parseFromString(segments.get(i).getSegment()).getSegment().length());
         }
-        //sendData();
+        
+        sendData(segments);
     }
    
     public LinkedList<Segment> readFileContentsAsSegments() {
@@ -70,7 +72,7 @@ public class Client {
             while (len > 0) {
                 byte segmentData[] = new byte[mss - Constants.kSegmentHeaderSize];
                 bis.read(segmentData, 0, segmentData.length);
-                Segment currentSegment = new Segment(mss, Constants.kDatatype, segmentData);
+                Segment currentSegment = new Segment(mss, Constants.kDatatype, (char)0, segmentData);
                 segments.add(currentSegment);   
                 len -= segmentData.length;
             }
@@ -80,24 +82,59 @@ public class Client {
 
         return segments; 
     }
-    public void sendData() {
-         try {
-            InetAddress IPAddress = InetAddress.getByName(Constants.kServerHostName);
-            DatagramPacket sendPacket = new DatagramPacket("hello".getBytes(), 4, IPAddress, Constants.kServerPortNumber);
-            clientSocket.send(sendPacket);
-            clientSocket.close();
+    
+    public void sendData(LinkedList<Segment> segments) {
+        boolean sent[] = new boolean[segments.size()];
+        for (int i = 0; i < sent.length; ++i) {
+            sent[i] = false;
+        }
+        int low = 0;
+        int high = Math.min(segments.size(), n);
+        InetAddress IPAddress = null;
+        try {
+            IPAddress = InetAddress.getByName(serverHostName);
         } catch (Exception e) {
             
         }
-     
+
+        while (! sent[sent.length - 1]) {
+            try {
+                for (int i = low; i < high; ++i) {
+                    DatagramPacket sendPacket = new DatagramPacket(segments.get(i).getSegment().getBytes(),
+                                                                   segments.get(i).getSegment().length(), 
+                                                                   IPAddress, serverPortNumber);
+                    clientSocket.send(sendPacket);
+                    sent[i] = true;
+                }
+
+                /*for (int i = low; i < high; ++i) {
+                     DatagramPacket receivePacket = new DatagramPacket(recvBuffer, recvBuffer.length);
+                    try {
+                        clientSocket.receive(receivePacket);
+                        System.out.println("Received : "  + new String(receivePacket.getData()).trim());
+                    } catch (Exception e) {
+                    }   
+                }*/
+                if (low < segments.size() - 1) {
+                    low++;
+                }
+                if (high < segments.size() - 1) {
+                    high++;
+                }
+            } catch (Exception e) {
+            }
+        }
+         
+        clientSocket.close();
     }
     public static void main(String[] args) {
-        if (args.length != 5) {
+        /*if (args.length != 5) {
             System.err.println("Usage : java Client <server-host-name> <server-port#> " + 
                                "<file-name> <N> <MSS>");
-        }       
-        Client client = new Client(args[0], Integer.parseInt(args[1]),
+        }*/
+        Client client = new Client("127.0.0.1", Constants.kServerPortNumber, "/Users/svpendse1/Desktop/milestone1.txt", 100, 100);
+        /*Client client = new Client(args[0], Integer.parseInt(args[1]),
                                    args[2], Integer.parseInt(args[3]), 
-                                   Integer.parseInt(args[4]));
+                                   Integer.parseInt(args[4]));*/
     }
 }

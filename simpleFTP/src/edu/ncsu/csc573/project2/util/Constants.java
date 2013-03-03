@@ -9,8 +9,8 @@ package edu.ncsu.csc573.project2.util;
  * @author svpendse1
  */
 public class Constants {
-    public static final int kMaxBufferSize = 65535;
-    public static final int kServerPortNumber = 7735;
+    public static final int kMaxBufferSize = 1024;
+    public static final int kServerPortNumber = 7734;
     public static final int kSegmentHeaderSize = 8;
     
     public static String kServerHostName = "127.0.0.1";

@@ -5,6 +5,7 @@
 package edu.ncsu.csc573.project2.server;
 
 import edu.ncsu.csc573.project2.util.Constants;
+import edu.ncsu.csc573.project2.util.Segment;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
@@ -37,17 +38,19 @@ public class Server {
             DatagramPacket receivePacket = new DatagramPacket(recvBuffer, recvBuffer.length);
             try {
                 serverSocket.receive(receivePacket);
-                System.out.println("Received : "  + new String(receivePacket.getData()));
+                Segment segment = Segment.parseFromString(new String(receivePacket.getData()));
+                System.out.println("Received : " + segment.toString());
+                //System.out.println("Received : "  + new String(receivePacket.getData()).trim());
             } catch (Exception e) {
-                System.err.println("Failed to receive datagram socket");
             }
         }
     }
    
     public static void main(String[] args) {
-        if (args.length != 3) {
+        /*if (args.length != 3) {
             System.err.println("Usage : java Server <port#> <file-name> <loss probability>");
-        }
-        Server server = new Server(Integer.parseInt(args[0]), args[1], Float.parseFloat(args[2]));      
+        }*/
+        //Server server = new Server(Integer.parseInt(args[0]), args[1], Float.parseFloat(args[2]));      
+        Server server = new Server(Constants.kServerPortNumber, "somefile", 0.5f);
     }
 }
