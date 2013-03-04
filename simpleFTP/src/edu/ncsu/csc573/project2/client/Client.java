@@ -81,6 +81,7 @@ public class Client {
 
         return segments; 
     }
+   
     
     public void sendData(LinkedList<Segment> segments) {
         System.out.println("Number of segments = " + segments.size());
@@ -110,14 +111,37 @@ public class Client {
         while (! sent[sent.length - 1]) {
             try {
                 for (int i = low; i < high; ++i) {
-                    DatagramPacket sendPacket = new DatagramPacket(segments.get(i).getSegment().getBytes(),
-                                                                   segments.get(i).getSegment().length(), 
+                    Segment currentSegment = segments.get(i);
+                    System.out.println(InetAddress.getLocalHost().getHostAddress() + " " + IPAddress.getHostAddress());
+                    char checksum = Segment.calculateChecksum(currentSegment, InetAddress.getLocalHost().getAddress(), IPAddress.getAddress());
+                    currentSegment.getHeader().setChecksum((char)((~checksum) & 0xFFFF));
+                    DatagramPacket sendPacket = new DatagramPacket(currentSegment.getSegment(),
+                                                                   currentSegment.getSegment().length, 
                                                                    IPAddress, serverPortNumber);
                     clientSocket.send(sendPacket);
-                    sent[i] = true;
                     System.out.println ("Segment " + i + " sent");
                 }
 
+                for (int i = low; i < high; ++i) {
+                    DatagramPacket recvPacket = new DatagramPacket(recvBuffer, recvBuffer.length);
+                    clientSocket.receive(recvPacket);
+                    Segment segment = Segment.parseFromBytes(recvPacket.getData());
+                    char checksum = Segment.calculateChecksum(segment, IPAddress.getAddress(), InetAddress.getLocalHost().getAddress());
+                    if (segment.getHeader().getChecksum() != checksum) {
+                        System.out.println("Checksum failed. Discarding packet");
+                    } else {
+                        System.out.println("Received acknowledgement for segment : " + segment.getHeader().getSequence_number());
+
+                        if (low == segment.getHeader().getSequence_number() && low <= segments.size() - 1) {
+                            sent[low] = true;
+                            low++;
+                            if (high <= segments.size() - 1) {
+                                high++;
+                            }
+                        }
+                    }
+                }
+                System.out.println("Low : " + low + " , High : " + high);
                 /*for (int i = low; i < high; ++i) {
                      DatagramPacket receivePacket = new DatagramPacket(recvBuffer, recvBuffer.length);
                     try {
@@ -125,27 +149,45 @@ public class Client {
                         System.out.println("Received : "  + new String(receivePacket.getData()).trim());
                     } catch (Exception e) {
                     }   
-                }*/
-                System.out.println("Low : " + low + " , High : " + high);
+                }
                 if (low < segments.size() - 1) {
                     low++;
                     
                 }
                 if (high <= segments.size() - 1) {
                     high++;
-                }
+                }*/
             } catch (Exception e) {
+                e.printStackTrace();
             }
         }
          
         clientSocket.close();
     }
+
+    public static void testSegmentTransfer() {
+        try {
+            DatagramSocket clientSocket = new DatagramSocket();
+            Segment segment = new Segment(1, Constants.kDatatype, (char)0, "hell hell hello".getBytes());
+            char checksum = Segment.calculateChecksum(segment, InetAddress.getLocalHost().getAddress(), InetAddress.getLocalHost().getAddress());
+            //segment.getHeader().setChecksum((char)((~checksum) & 0xFFFF));
+            segment.getHeader().setChecksum((char)30000);
+            System.out.println(segment.toString());
+            DatagramPacket packet = new DatagramPacket(segment.getSegment(), segment.getSegment().length, InetAddress.getLocalHost(), 7734);
+            clientSocket.send(packet);
+        } catch (Exception e) {
+            
+        }
+    }
+    
     public static void main(String[] args) {
         /*if (args.length != 5) {
             System.err.println("Usage : java Client <server-host-name> <server-port#> " + 
                                "<file-name> <N> <MSS>");
         }*/
-        Client client = new Client("127.0.0.1", Constants.kServerPortNumber, "resources/rfc861.txt", 5, 100);
+        //Client client = new Client("127.0.0.1", Constants.kServerPortNumber, "resources/rfc861.txt", 5, 100);
+        
+        testSegmentTransfer();
         /*Client client = new Client(args[0], Integer.parseInt(args[1]),
                                    args[2], Integer.parseInt(args[3]), 
                                    Integer.parseInt(args[4]));*/
