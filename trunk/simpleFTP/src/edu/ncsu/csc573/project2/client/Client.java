@@ -10,10 +10,14 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.LinkedList;
 
 /**
@@ -41,6 +45,7 @@ public class Client {
         recvBuffer = new byte[mss];
         try {
             clientSocket = new DatagramSocket();
+            clientSocket.setSoTimeout(2000);
         } catch (Exception e) {
             System.err.println("Failed to create client datagram socket");
         }
@@ -106,28 +111,14 @@ public class Client {
         }
         //Send the segments to the server using the Go Back N protocol
 
-        try {
-            for (int i = low; i < high; ++i) {
-                this.sendSegment(segments.get(i));
-            }
-        } catch (Exception e ) {
-            e.printStackTrace();
+        //Send the first window
+        for (int i = low; i < high; ++i) {
+            this.sendSegment(segments.get(i));
         }
-        
+       
         while (! sent[sent.length - 1]) {
             try {
                 System.out.println("Outside Low : " + low + " , High : " + high);
-                /*for (int i = low; i < high; ++i) {
-                    Segment currentSegment = segments.get(i);
-                    char checksum = currentSegment.calculateChecksum(currentSegment, InetAddress.getLocalHost().getAddress(), IPAddress.getAddress(), this.mss);
-                    currentSegment.getHeader().setChecksum((char)((~checksum) & 0xFFFF));
-                    DatagramPacket sendPacket = new DatagramPacket(currentSegment.getSegment(),
-                                                                   currentSegment.getSegment().length, 
-                                                                   IPAddress, serverPortNumber);
-                    clientSocket.send(sendPacket);
-                    System.out.println ("Segment " + i + " sent");
-                }*/
-
                 Segment segment = this.receiveSegment();
                 if (segment == null) {
                      System.out.println("Packet discarded");
@@ -141,6 +132,12 @@ public class Client {
                             high++;
                         }
                     }
+                }
+            } catch (SocketTimeoutException se) {
+                //A timeout occurred
+                System.out.println("A timeout occurred. Resending packets in window.");
+                for (int i = low; i < high; ++i) {
+                    this.sendSegment(segments.get(i));
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -164,22 +161,17 @@ public class Client {
         }    
     }
    
-    public Segment receiveSegment() {
-        try {
-             recvBuffer = new byte[this.mss];
-             DatagramPacket recvPacket = new DatagramPacket(recvBuffer, recvBuffer.length);
-             clientSocket.receive(recvPacket);
-             Segment segment = Segment.parseFromBytes(recvPacket.getData(), this.mss);
-             char checksum = segment.calculateChecksum(segment, IPAddress.getAddress(), InetAddress.getLocalHost().getAddress(), this.mss);
-             if (checksum + segment.getHeader().getChecksum() != 0xFFFF) {
-                System.out.println("Checksum failed. Discarding packet");
-                return null;
-             } 
-             return segment;
-        } catch (Exception e) {
-            e.printStackTrace();
+    public Segment receiveSegment() throws SocketTimeoutException, IOException, SocketException, UnknownHostException {
+        recvBuffer = new byte[this.mss];
+        DatagramPacket recvPacket = new DatagramPacket(recvBuffer, recvBuffer.length);
+        clientSocket.receive(recvPacket);
+        Segment segment = Segment.parseFromBytes(recvPacket.getData(), this.mss);
+        char checksum = segment.calculateChecksum(segment, IPAddress.getAddress(), InetAddress.getLocalHost().getAddress(), this.mss);
+        if (checksum + segment.getHeader().getChecksum() != 0xFFFF) {
+            System.out.println("Checksum failed. Discarding packet");
+            return null;
         } 
-        return null;
+        return segment;
     }
     
     public static void testSegmentTransfer() {
