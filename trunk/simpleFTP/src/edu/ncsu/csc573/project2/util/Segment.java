@@ -68,13 +68,18 @@ public class Segment {
         return data;
     }
    
-    public static char calculateChecksum(Segment segment, byte sourceAddress[], byte destAddress[]) {
+    public char calculateChecksum(Segment segment, byte sourceAddress[], byte destAddress[], int mss) {
    
-        byte segment_data[] = segment.getData(); 
-        int pad_length = (int)Math.ceil(1.0 * segment_data.length / 4);
-        byte segment_data_padded[] = new byte[4 * pad_length];
-        for (int i = 0; i < segment_data.length; ++i) {
-            segment_data_padded[i] = segment_data[i];
+        byte segment_data[] = segment.getData();
+
+        int pad_length = 0;
+        byte segment_data_padded[] = null;
+        if (segment_data != null) {
+            //pad_length = (int)Math.ceil(1.0 * segment_data.length / 4);
+            segment_data_padded = new byte[4 * (mss - Constants.kSegmentHeaderSize)];
+            for (int i = 0; i < segment_data.length; ++i) {
+                segment_data_padded[i] = segment_data[i];
+            }
         }
        
         int result = 0;
@@ -100,9 +105,11 @@ public class Segment {
         System.out.println("Result before data : " + result);*/
 
         //Data
-        for (int i = 0; i < segment_data_padded.length; i+=4) {
-            result += (segment_data_padded[i] << 8 | segment_data_padded[i+1]);
-            result += (segment_data_padded[i+2] << 8 | segment_data_padded[i+3]);
+        if (segment_data_padded != null) {
+            for (int i = 0; i < segment_data_padded.length; i+=4) {
+                result += (segment_data_padded[i] << 8 | segment_data_padded[i+1]);
+                result += (segment_data_padded[i+2] << 8 | segment_data_padded[i+3]);
+            }
         }
         
         //System.out.println("Result after data : " + result);
@@ -171,6 +178,9 @@ public class Segment {
     }
 
     public String toString() {
+        if (this.data == null) {
+            return "" + "(" + header.toString() + ")";
+        }
         return "" + "(" + header.toString() + ") " + ", Data = " + new String(data);
     }
 
@@ -192,7 +202,7 @@ public class Segment {
         return null;
     }
 
-    public static Segment parseFromBytes(byte input[]) { 
+    public static Segment parseFromBytes(byte input[], int mss) { 
         try {
             ByteArrayInputStream bis = new ByteArrayInputStream(input);
             DataInputStream dis = new DataInputStream(bis);
@@ -200,14 +210,16 @@ public class Segment {
             char cksum = dis.readChar(); 
             char type = dis.readChar(); 
 
-            String contents = "";
-            int c;
-            while ((c = dis.read()) != -1) {
-               contents += (char)c;
+            byte data[] = null;
+            if (type == Constants.kDatatype) {
+                data = new byte[mss - Constants.kSegmentHeaderSize];
+                dis.read(data);
+            } else {
+                
             }
             
             Segment segment = new Segment(seq,
-                                          type, cksum, contents.getBytes());
+                                          type, cksum, data); 
             return segment;
         } catch (Exception e) {
             e.printStackTrace();
@@ -216,8 +228,8 @@ public class Segment {
     }
 
     public static void main(String[] args) throws Exception {
-        Segment segment = new Segment(1, Constants.kDatatype, (char)0, "hell hell hello".getBytes());
-        char checksum = Segment.calculateChecksum(segment, InetAddress.getLocalHost().getAddress(), InetAddress.getLocalHost().getAddress());
+        Segment segment = new Segment(1, Constants.kAckType, (char)0, null); 
+        char checksum = segment.calculateChecksum(segment, InetAddress.getLocalHost().getAddress(), InetAddress.getLocalHost().getAddress(), 100);
         byte segment_bytes[] = segment.getSegment();
         for (int i = 0; i < segment_bytes.length; ++i) {
             System.out.print(segment_bytes[i] + " " );
@@ -232,13 +244,13 @@ public class Segment {
         System.out.println();
         System.out.println("Final Checksum : " + (int)checksum);
         
-        Segment parsedSegment = Segment.parseFromBytes(segment.getSegment());
+        Segment parsedSegment = Segment.parseFromBytes(segment.getSegment(), 100);
         segment_bytes = parsedSegment.getSegment();
         for (int i = 0; i < segment_bytes.length; ++i) {
             System.out.print(segment_bytes[i] + " " );
         }
         System.out.println();
-        checksum = Segment.calculateChecksum(parsedSegment, InetAddress.getLocalHost().getAddress(), InetAddress.getLocalHost().getAddress());
+        checksum = segment.calculateChecksum(parsedSegment, InetAddress.getLocalHost().getAddress(), InetAddress.getLocalHost().getAddress(), 100);
         System.out.println("Final Checksum : " + (int)checksum);
         //segment.getHeader().setChecksum((char)((~checksum) & 0xFFFF));
         //System.out.println("Checksum : " + (int)Segment.calculateChecksum(segment, InetAddress.getLocalHost().getAddress(), InetAddress.getLocalHost().getAddress()));

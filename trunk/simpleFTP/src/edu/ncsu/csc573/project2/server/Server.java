@@ -24,12 +24,12 @@ public class Server {
     byte recvBuffer[];       //The receive buffer
     byte sendBuffer[];          //The send buffer
     int mss;
-    Vector<Segment> segments;   
+    Segment segments[];   
     public Server(int portNumber, String fileName, float p) {
         this.portNumber = portNumber;
         this.fileName = fileName;
         this.p = p;
-        segments = new Vector<Segment>(100);
+        segments = new Segment[1000];
         
         sendBuffer = new byte[Constants.kMaxBufferSize];
         recvBuffer = new byte[Constants.kMaxBufferSize];
@@ -59,18 +59,15 @@ public class Server {
             DatagramPacket receivePacket = new DatagramPacket(recvBuffer, recvBuffer.length);
             try {
                 serverSocket.receive(receivePacket);
-                Segment recvSegment = Segment.parseFromBytes(receivePacket.getData());
-                char checksum = Segment.calculateChecksum(recvSegment, receivePacket.getAddress().getAddress(), InetAddress.getLocalHost().getAddress());
-                System.out.println(receivePacket.getAddress().getHostAddress() + " " + InetAddress.getLocalHost().getHostAddress());
-                if (checksum != recvSegment.getHeader().getChecksum()) {
+                Segment recvSegment = Segment.parseFromBytes(receivePacket.getData(), this.mss);
+                char checksum = recvSegment.calculateChecksum(recvSegment, receivePacket.getAddress().getAddress(), InetAddress.getLocalHost().getAddress(), this.mss);
+                if (checksum + recvSegment.getHeader().getChecksum() != 0xFFFF) {
                     System.out.println("Checksum failed. Discarding packet");
-                    System.out.println("Calculated : " + (int)checksum);
-                    System.out.println("Actual : " + (int)recvSegment.getHeader().getChecksum());
                 } else {
-                    System.out.println("Received : " + recvSegment.toString() + " Acknowledged : " + recvSegment.isAcknowledged());
+                    System.out.println("Received : " + recvSegment.getHeader().getSequence_number() + " Acknowledged : " + recvSegment.isAcknowledged());
 
                     Segment sendSegment = new Segment(recvSegment.getHeader().getSequence_number(), Constants.kAckType, (char) 0, null);
-                    checksum = Segment.calculateChecksum(sendSegment, receivePacket.getAddress().getAddress(), InetAddress.getLocalHost().getAddress());              
+                    checksum = sendSegment.calculateChecksum(sendSegment, receivePacket.getAddress().getAddress(), InetAddress.getLocalHost().getAddress(), this.mss);              
                     sendSegment.getHeader().setChecksum((char)((~checksum) & 0xFFFF));          
                     DatagramPacket sendPacket = new DatagramPacket(sendSegment.getSegment(), sendSegment.getSegment().length, receivePacket.getAddress(), receivePacket.getPort());
 
@@ -78,7 +75,7 @@ public class Server {
                     System.out.println("Sent acknowledgement for segment : " + sendSegment.getHeader().getSequence_number());
                
                     recvSegment.setAcknowledged(true);
-                    segments.add(recvSegment.getHeader().getSequence_number(), recvSegment);
+                    segments[recvSegment.getHeader().getSequence_number()] = recvSegment;
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -93,7 +90,9 @@ public class Server {
             DatagramPacket packet = new DatagramPacket(recvBuffer, recvBuffer.length);
             serverSocket.receive(packet);
 
-            Segment segment = Segment.parseFromBytes(packet.getData());
+            Segment segment = Segment.parseFromBytes(packet.getData(), 100);
+            char checksum = segment.calculateChecksum(segment, packet.getAddress().getAddress(), InetAddress.getLocalHost().getAddress(), 100);
+            System.out.println("calculated checksum = " + (int)checksum);
             System.out.println(segment.toString());
         } catch (Exception e) {
             e.printStackTrace();
@@ -105,8 +104,8 @@ public class Server {
             System.err.println("Usage : java Server <port#> <file-name> <loss probability>");
         }*/
         //Server server = new Server(Integer.parseInt(args[0]), args[1], Float.parseFloat(args[2]));      
-        //Server server = new Server(Constants.kServerPortNumber, "somefile", 0.5f);
+        Server server = new Server(Constants.kServerPortNumber, "somefile", 0.5f);
 
-        testSegmentTransfer();
+        //testSegmentTransfer();
     }
 }
