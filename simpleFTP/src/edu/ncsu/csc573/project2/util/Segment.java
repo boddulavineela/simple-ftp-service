@@ -42,7 +42,15 @@ public class Segment {
         header = new SegmentHeader(sequence_number, checksum, segmentType);
 
     }
+    
+    public static void setSequenceCounter(int value) {
+        sequence_counter = 0;
+    }
 
+    public static int getSequenceCounter() {
+        return sequence_counter;
+    }
+    
     public SegmentHeader getHeader() {
         return header;
     }
@@ -211,7 +219,7 @@ public class Segment {
             char type = dis.readChar(); 
 
             byte data[] = null;
-            if (type == Constants.kDatatype) {
+            if (type == Constants.kDataType) {
                 data = new byte[mss - Constants.kSegmentHeaderSize];
                 dis.read(data);
             } else {
