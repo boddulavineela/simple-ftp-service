@@ -16,5 +16,6 @@ public class Constants {
     public static String kServerHostName = "127.0.0.1";
 
     public static final char kAckType = 43690;
-    public static final char kDatatype = 21845;
+    public static final char kDataType = 21845;
+    public static final char kFinType = 65535;
 }

@@ -74,7 +74,7 @@ public class Client {
             while (len > 0) {
                 byte segmentData[] = new byte[mss - Constants.kSegmentHeaderSize];
                 bis.read(segmentData, 0, segmentData.length);
-                Segment currentSegment = new Segment(Constants.kDatatype, (char)0, segmentData);
+                Segment currentSegment = new Segment(Constants.kDataType, (char)0, segmentData);
                 segments.add(currentSegment);   
                 len -= segmentData.length;
             }
@@ -143,7 +143,9 @@ public class Client {
                 e.printStackTrace();
             }
         }
-         
+        
+        Segment finSegment = new Segment(Constants.kFinType, (char)0, null);
+        this.sendSegment(finSegment);
         clientSocket.close();
     }
 

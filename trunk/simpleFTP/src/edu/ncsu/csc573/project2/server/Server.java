@@ -22,18 +22,16 @@ public class Server {
     float p;    //The packet loss probability
     DatagramSocket serverSocket;    //The server side datagram socket
     byte recvBuffer[];       //The receive buffer
-    byte sendBuffer[];          //The send buffer
     int mss;
     Segment segments[];   
     public Server(int portNumber, String fileName, float p) {
         this.portNumber = portNumber;
         this.fileName = fileName;
         this.p = p;
-        segments = new Segment[1000];
+        segments = new Segment[100];
         for (int i = 0; i < segments.length; ++i) {
             segments[i] = null;
         } 
-        sendBuffer = new byte[Constants.kMaxBufferSize];
         recvBuffer = new byte[Constants.kMaxBufferSize];
         try {
             serverSocket = new DatagramSocket(Constants.kServerPortNumber);
@@ -52,11 +50,11 @@ public class Server {
             
         }
        
-        sendBuffer = new byte[this.mss];
         recvBuffer = new byte[this.mss];
         //Resize the send and receive buffers
         
         //Server operation code
+        while (true) {
         while (true) {
             DatagramPacket receivePacket = new DatagramPacket(recvBuffer, recvBuffer.length);
             try {
@@ -66,6 +64,14 @@ public class Server {
                 if (checksum + recvSegment.getHeader().getChecksum() != 0xFFFF) {
                     System.out.println("Checksum failed. Discarding packet");
                 } else {
+                    if (recvSegment.getHeader().getSegmentType() == Constants.kFinType) {
+                        segments = new Segment[100];
+                        for (int i = 0; i < segments.length; ++i) {
+                            segments[i] = null;
+                        }
+                        Segment.setSequenceCounter(0);
+                        break;
+                    }
                     float random = (float)Math.random();
                     //System.out.println(this.p + " " + random);
                     if (random < this.p) {
@@ -83,20 +89,26 @@ public class Server {
                         
                             System.out.println("Sent acknowledgement for segment : " + sendSegment.getHeader().getSequence_number());
                             recvSegment.setAcknowledged(true);
-                            if (segments[recvSegment.getHeader().getSequence_number()] == null) {
-                                segments[recvSegment.getHeader().getSequence_number()] = recvSegment;
+
+                            if (seqNumber >= segments.length) {
+                                Segment temp[] = new Segment[segments.length * 2];
+                                for (int i = 0; i < segments.length; ++i) {
+                                    temp[i] = segments[i];
+                                }
+                                segments = temp;
+                            }
+                            if (segments[seqNumber] == null) {
+                                segments[seqNumber] = recvSegment;
                             } else {
-                                System.out.println("Duplicate packet : " + recvSegment.getHeader().getSequence_number());
+                                System.out.println("Duplicate packet : " + seqNumber);
                             }
                         }
-                        /*if (seqNumber > 0) {
-                            System.out.println("seqNumber : " + seqNumber + " seqNumber - 1 Ack : " + segments[seqNumber - 1].isAcknowledged());
-                        }*/
                     }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
         }
     }
 
@@ -121,7 +133,7 @@ public class Server {
             System.err.println("Usage : java Server <port#> <file-name> <loss probability>");
         }*/
         //Server server = new Server(Integer.parseInt(args[0]), args[1], Float.parseFloat(args[2]));      
-        Server server = new Server(Constants.kServerPortNumber, "somefile", 0.1f);
+        Server server = new Server(Constants.kServerPortNumber, "somefile", 0.05f);
 
         //testSegmentTransfer();
     }
