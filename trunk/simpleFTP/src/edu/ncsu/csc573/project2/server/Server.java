@@ -114,7 +114,7 @@ public class Server {
         }
         //}
 
-        //Assemble the segments
+        //Assemble the segments to contiguous file content
         byte fileData[] = new byte[mss * (seqNumber + 1)];
         int counter = 0;
         for (int i = 0; i < (seqNumber + 1); ++i) {
