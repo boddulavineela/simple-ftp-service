@@ -45,7 +45,7 @@ public class Client {
         recvBuffer = new byte[mss];
         try {
             clientSocket = new DatagramSocket();
-            clientSocket.setSoTimeout(2000);
+            clientSocket.setSoTimeout(Constants.kSoTimeout);
         } catch (Exception e) {
             System.err.println("Failed to create client datagram socket");
         }
@@ -87,7 +87,7 @@ public class Client {
    
     
     public void sendData(LinkedList<Segment> segments) {
-        System.out.println("Number of segments = " + segments.size());
+        //System.out.println("Number of segments = " + segments.size());
         boolean sent[] = new boolean[segments.size()];
         for (int i = 0; i < sent.length; ++i) {
             sent[i] = false;
@@ -118,24 +118,31 @@ public class Client {
        
         while (! sent[sent.length - 1]) {
             try {
-                System.out.println("Outside Low : " + low + " , High : " + high);
+                //System.out.println("Outside Low : " + low + " , High : " + high);
                 Segment segment = this.receiveSegment();
-                if (segment == null) {
-                     System.out.println("Packet discarded");
-                } else {
-                     System.out.println("Received acknowledgement for segment : " + segment.getHeader().getSequence_number());
-                     if (low == segment.getHeader().getSequence_number() && low <= segments.size() - 1) {
-                        sent[low] = true;
-                        low++;
-                        if (high <= segments.size() - 1) {
-                            this.sendSegment(segments.get(high));
-                            high++;
+                if (segment != null) { 
+                    //System.out.println("Received acknowledgement for segment : " + segment.getHeader().getSequence_number());
+                     //if (low == segment.getHeader().getSequence_number() && low <= segments.size() - 1) {
+
+                     //Cummulative acknowledgements
+                     if (low <= segments.size() - 1) {
+                        //if (low > segment.getHeader().getSequence_number()) {
+                        //    System.out.println("Cummulative acknowledgement occurred");
+                        //}
+                        int cnt = low;
+                        for (;cnt <= segment.getHeader().getSequence_number(); ++cnt) {
+                            sent[low] = true;
+                            low++;
+                            if (high <= segments.size() - 1) {
+                                this.sendSegment(segments.get(high));
+                                high++;
+                            }
                         }
                     }
                 }
             } catch (SocketTimeoutException se) {
                 //A timeout occurred
-                System.out.println("A timeout occurred. Resending packets in window.");
+                System.out.println("Timeout, sequence number = " + segments.get(low).getHeader().getSequence_number());
                 for (int i = low; i < high; ++i) {
                     this.sendSegment(segments.get(i));
                 }
@@ -157,7 +164,7 @@ public class Client {
                                                            segment.getSegment().length, 
                                                            IPAddress, serverPortNumber);
             clientSocket.send(sendPacket);
-            System.out.println ("Segment " + segment.getHeader().getSequence_number() + " sent");
+            //System.out.println ("Segment " + segment.getHeader().getSequence_number() + " sent");
         } catch (Exception e ) {
             e.printStackTrace();
         }    
@@ -170,7 +177,7 @@ public class Client {
         Segment segment = Segment.parseFromBytes(recvPacket.getData(), this.mss);
         char checksum = segment.calculateChecksum(segment, IPAddress.getAddress(), InetAddress.getLocalHost().getAddress(), this.mss);
         if (checksum + segment.getHeader().getChecksum() != 0xFFFF) {
-            System.out.println("Checksum failed. Discarding packet");
+            System.out.println("Checksum failed. Discarding segment " + segment.getHeader().getSequence_number());
             return null;
         } 
         return segment;
@@ -197,7 +204,7 @@ public class Client {
             System.err.println("Usage : java Client <server-host-name> <server-port#> " + 
                                "<file-name> <N> <MSS>");
         }*/
-        Client client = new Client("127.0.0.1", Constants.kServerPortNumber, "resources/rfc861.txt", 5, 100);
+        Client client = new Client("127.0.0.1", Constants.kServerPortNumber, "resources/rfc/rfc2328.txt", 100, 500);
         
         //testSegmentTransfer();
         /*Client client = new Client(args[0], Integer.parseInt(args[1]),
