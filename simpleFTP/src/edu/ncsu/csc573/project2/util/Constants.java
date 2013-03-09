@@ -10,7 +10,7 @@ package edu.ncsu.csc573.project2.util;
  */
 public class Constants {
     public static final int kMaxBufferSize = 1024;
-    public static final int kServerPortNumber = 7734;
+    public static final int kServerPortNumber = 7735;
     public static final int kSegmentHeaderSize = 8;
     public static final int kSegmentBufferSize = 100;
     public static final int kSoTimeout = 200;

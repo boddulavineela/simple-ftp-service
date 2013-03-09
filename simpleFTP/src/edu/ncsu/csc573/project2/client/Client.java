@@ -200,15 +200,17 @@ public class Client {
     }
     
     public static void main(String[] args) {
-        /*if (args.length != 5) {
+
+        if (args.length != 5) {
             System.err.println("Usage : java Client <server-host-name> <server-port#> " + 
                                "<file-name> <N> <MSS>");
-        }*/
-        Client client = new Client("127.0.0.1", Constants.kServerPortNumber, "resources/rfc/rfc2328.txt", 100, 500);
+            System.exit(0);
+        }
+        //Client client = new Client("127.0.0.1", Constants.kServerPortNumber, "resources/rfc/rfc2328.txt", 100, 500);
         
         //testSegmentTransfer();
-        /*Client client = new Client(args[0], Integer.parseInt(args[1]),
+        Client client = new Client(args[0], Integer.parseInt(args[1]),
                                    args[2], Integer.parseInt(args[3]), 
-                                   Integer.parseInt(args[4]));*/
+                                   Integer.parseInt(args[4]));
     }
 }

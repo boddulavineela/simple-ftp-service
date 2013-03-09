@@ -6,10 +6,12 @@ package edu.ncsu.csc573.project2.server;
 
 import edu.ncsu.csc573.project2.util.Constants;
 import edu.ncsu.csc573.project2.util.Segment;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.util.Vector;
 
 /**
  *
@@ -33,7 +35,7 @@ public class Server {
             segments[i] = null;
         } 
         try {
-            serverSocket = new DatagramSocket(Constants.kServerPortNumber);
+            serverSocket = new DatagramSocket(this.portNumber);
         } catch (Exception e) {
             System.err.println("Failed to create server datagram socket");
         }
@@ -75,7 +77,7 @@ public class Server {
                     float random = (float)Math.random();
                     //System.out.println(this.p + " " + random);
                     if (random < this.p) {
-                        System.out.println("Packet loss, sequence number = " + recvSegment.getHeader().getSequence_number() + " : " + random + ", " + this.p);
+                        System.out.println("Packet loss, sequence number = " + recvSegment.getHeader().getSequence_number());
                     } else {
                         seqNumber = recvSegment.getHeader().getSequence_number();
                         if (seqNumber >= segments.length) {
@@ -127,7 +129,16 @@ public class Server {
                 }
             }
         }
-        System.out.println(new String(fileData).trim());
+        //System.out.println(new String(fileData).trim());
+
+        //Write the file to the specified filename
+        try {
+            FileOutputStream fos = new FileOutputStream(new File(fileName));
+            fos.write(new String(fileData).trim().getBytes());
+            fos.close();
+        } catch (Exception e) {
+            System.err.println("Failed to write to the specified file.");
+        }
     }
 
     public static void testSegmentTransfer() {
@@ -147,11 +158,12 @@ public class Server {
     }
     
     public static void main(String[] args) {
-        /*if (args.length != 3) {
+        if (args.length != 3) {
             System.err.println("Usage : java Server <port#> <file-name> <loss probability>");
-        }*/
-        //Server server = new Server(Integer.parseInt(args[0]), args[1], Float.parseFloat(args[2]));      
-        Server server = new Server(Constants.kServerPortNumber, "somefile", 0.05f);
+            System.exit(0);
+        }
+        Server server = new Server(Integer.parseInt(args[0]), args[1], Float.parseFloat(args[2]));      
+        //Server server = new Server(Constants.kServerPortNumber, "/Users/svpendse1/Desktop/rfc_transfer.txt", 0.05f);
 
         //testSegmentTransfer();
     }
