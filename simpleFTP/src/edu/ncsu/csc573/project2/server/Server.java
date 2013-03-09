@@ -162,7 +162,7 @@ public class Server {
             System.err.println("Usage : java Server <port#> <file-name> <loss probability>");
             System.exit(0);
         }
-        Server server = new Server(Integer.parseInt(args[0]), args[1], Float.parseFloat(args[2]));      
+        Server server = new Server(Integer.parseInt(args[0]), args[1], Float.parseFloat(args[2]));
         //Server server = new Server(Constants.kServerPortNumber, "/Users/svpendse1/Desktop/rfc_transfer.txt", 0.05f);
 
         //testSegmentTransfer();
