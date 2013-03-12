@@ -296,8 +296,8 @@ public class Client {
 
     public void sendSegment(Segment segment) {
       try {
-            System.out.println("Self : " + InetAddress.getLocalHost().getHostAddress());
-            System.out.println("Remote : " + IPAddress.getHostAddress());
+            //System.out.println("Self : " + InetAddress.getLocalHost().getHostAddress());
+            //System.out.println("Remote : " + IPAddress.getHostAddress());
             char checksum = segment.calculateChecksum(segment, InetAddress.getLocalHost().getAddress(), IPAddress.getAddress(), this.mss);
             segment.getHeader().setChecksum((char)((~checksum) & 0xFFFF));
             DatagramPacket sendPacket = new DatagramPacket(segment.getSegment(),
