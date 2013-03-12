@@ -328,11 +328,14 @@ public class Client {
             DatagramSocket clientSocket = new DatagramSocket();
             byte data[] = new byte[92];
             Segment segment = new Segment(1, Constants.kAckType, (char)0, null);
-            char checksum = segment.calculateChecksum(segment, InetAddress.getLocalHost().getAddress(), InetAddress.getLocalHost().getAddress(), 100);
+            System.out.println("Self : " + InetAddress.getLocalHost().getHostAddress());
+            System.out.println("Remote : " + InetAddress.getByName("10.139.60.135").getHostAddress());
+
+            char checksum = segment.calculateChecksum(segment, InetAddress.getByName("10.139.60.135").getAddress(), InetAddress.getLocalHost().getAddress(), 100);
             segment.getHeader().setChecksum((char)((~checksum) & 0xFFFF));
             //segment.getHeader().setChecksum((char)checksum);
             System.out.println(segment.toString());
-            DatagramPacket packet = new DatagramPacket(segment.getSegment(), segment.getSegment().length, InetAddress.getLocalHost(), 7734);
+            DatagramPacket packet = new DatagramPacket(segment.getSegment(), segment.getSegment().length, InetAddress.getByName("10.139.60.135"), 7734);
             clientSocket.send(packet);
         } catch (Exception e) {
             e.printStackTrace();  
@@ -351,21 +354,22 @@ public class Client {
             System.out.print((char)value);
         }*/
     }
-    
+   
     public static void main(String[] args) {
 
         //testRdtSend();
-        if (args.length != 5) {
+                //Client client = new Client("127.0.0.1", Constants.kServerPortNumber, "resources/rfc/rfc2328.txt", 100, 500);
+        
+        testSegmentTransfer();
+        /*if (args.length != 5) {
             System.err.println("Usage : java Client <server-host-name> <server-port#> " + 
                                "<file-name> <N> <MSS>");
             System.exit(0);
         }
-        //Client client = new Client("127.0.0.1", Constants.kServerPortNumber, "resources/rfc/rfc2328.txt", 100, 500);
-        
-        //testSegmentTransfer();
+
         Client client = new Client(args[0], Integer.parseInt(args[1]),
                                    args[2], Integer.parseInt(args[3]), 
-                                   Integer.parseInt(args[4]));
+                                   Integer.parseInt(args[4]));*/
 
         /*Client client = new Client(args[0], Integer.parseInt(args[1]),
                                    args[2],
