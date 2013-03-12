@@ -89,7 +89,7 @@ public class Segment {
                 segment_data_padded[i] = segment_data[i];
             }
         }
-       
+      
         int result = 0;
         //Pseudo Header
         result += (sourceAddress[0] << 8 | sourceAddress[1]);
@@ -99,14 +99,14 @@ public class Segment {
         result += (0x0011);
         int total_length = segment.getSegment().length;
         result += (total_length & 0xFFFF);
-        
         //Header
         int sequence_number = segment.getHeader().getSequence_number();
         int segmentType = segment.getHeader().getSegmentType();
         int checksum = segment.getHeader().getChecksum();
         result += (sequence_number >> 16) + (sequence_number & 0xFFFF) + segmentType; 
 
-        /*System.out.println("Seq Low : " + (sequence_number >> 16));
+        /*System.out.println("Total length = " + (total_length & 0xFFFF));
+        System.out.println("Seq Low : " + (sequence_number >> 16));
         System.out.println("Seq High : " + (sequence_number & 0xFFFF));
         System.out.println("Segment Type : " + (int)segmentType);
         System.out.println("Checksum : " + checksum);
@@ -243,7 +243,7 @@ public class Segment {
             System.out.print(segment_bytes[i] + " " );
         }
         System.out.println();
-        segment.getHeader().setChecksum((char)32866);
+        segment.getHeader().setChecksum((char)checksum);
 
         segment_bytes = segment.getSegment();
         for (int i = 0; i < segment_bytes.length; ++i) {
