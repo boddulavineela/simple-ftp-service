@@ -157,6 +157,7 @@ public class Client {
         } catch (Exception e) {
             System.err.println("Could not send MSS to the server");
         }
+
         //Send the segments to the server using the Go Back N protocol
 
         //Initialize the first window
@@ -295,6 +296,8 @@ public class Client {
 
     public void sendSegment(Segment segment) {
       try {
+            System.out.println("Self : " + InetAddress.getLocalHost().getHostAddress());
+            System.out.println("Remote : " + IPAddress.getHostAddress());
             char checksum = segment.calculateChecksum(segment, InetAddress.getLocalHost().getAddress(), IPAddress.getAddress(), this.mss);
             segment.getHeader().setChecksum((char)((~checksum) & 0xFFFF));
             DatagramPacket sendPacket = new DatagramPacket(segment.getSegment(),
