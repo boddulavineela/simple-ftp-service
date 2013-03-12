@@ -62,8 +62,8 @@ public class Server {
             try {
                 serverSocket.receive(receivePacket);
                 Segment recvSegment = Segment.parseFromBytes(receivePacket.getData(), this.mss);
-                System.out.println("Self : " + InetAddress.getLocalHost().getHostAddress());
-                System.out.println("Remote : " + receivePacket.getAddress().getHostAddress());;
+                //System.out.println("Self : " + InetAddress.getLocalHost().getHostAddress());
+                //System.out.println("Remote : " + receivePacket.getAddress().getHostAddress());;
                 char checksum = recvSegment.calculateChecksum(recvSegment, receivePacket.getAddress().getAddress(), InetAddress.getLocalHost().getAddress(), this.mss);
                 if (checksum + recvSegment.getHeader().getChecksum() != 0xFFFF) {
                     System.out.println("Checksum failed. Discarding segment " + recvSegment.getHeader().getSequence_number());
@@ -151,6 +151,9 @@ public class Server {
             serverSocket.receive(packet);
 
             Segment segment = Segment.parseFromBytes(packet.getData(), 100);
+            System.out.println("Self : " + InetAddress.getLocalHost().getHostAddress());
+            System.out.println("Remote : " + packet.getAddress().getHostAddress());
+            
             char checksum = segment.calculateChecksum(segment, packet.getAddress().getAddress(), InetAddress.getLocalHost().getAddress(), 100);
             System.out.println("calculated checksum = " + (int)checksum);
             System.out.println(segment.toString());
@@ -166,7 +169,6 @@ public class Server {
         }
         Server server = new Server(Integer.parseInt(args[0]), args[1], Float.parseFloat(args[2]));
         //Server server = new Server(Constants.kServerPortNumber, "/Users/svpendse1/Desktop/rfc_transfer.txt", 0.05f);
-
         //testSegmentTransfer();
     }
 }
