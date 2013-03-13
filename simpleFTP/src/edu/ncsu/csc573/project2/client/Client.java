@@ -146,17 +146,18 @@ public class Client {
         try {
             IPAddress = InetAddress.getByName(serverHostName);
         } catch (Exception e) {
-            
+            System.err.println("Failed to get server by hostname");
         }
+        
         //Send the MSS to the server
-        String mssString = "" + mss;
+        /*String mssString = "" + mss;
         try {
             DatagramPacket mssPacket = new DatagramPacket(mssString.getBytes(), mssString.length(), IPAddress, serverPortNumber);
 
             clientSocket.send(mssPacket);
         } catch (Exception e) {
             System.err.println("Could not send MSS to the server");
-        }
+        }*/
 
         //Send the segments to the server using the Go Back N protocol
 
@@ -298,7 +299,7 @@ public class Client {
       try {
             //System.out.println("Self : " + InetAddress.getLocalHost().getHostAddress());
             //System.out.println("Remote : " + IPAddress.getHostAddress());
-            char checksum = segment.calculateChecksum(segment, InetAddress.getLocalHost().getAddress(), IPAddress.getAddress(), this.mss);
+            char checksum = segment.calculateChecksum(segment, InetAddress.getLocalHost().getAddress(), IPAddress.getAddress());
             segment.getHeader().setChecksum((char)((~checksum) & 0xFFFF));
             DatagramPacket sendPacket = new DatagramPacket(segment.getSegment(),
                                                            segment.getSegment().length, 
@@ -314,8 +315,8 @@ public class Client {
         recvBuffer = new byte[this.mss];
         DatagramPacket recvPacket = new DatagramPacket(recvBuffer, recvBuffer.length);
         clientSocket.receive(recvPacket);
-        Segment segment = Segment.parseFromBytes(recvPacket.getData(), this.mss);
-        char checksum = segment.calculateChecksum(segment, IPAddress.getAddress(), InetAddress.getLocalHost().getAddress(), this.mss);
+        Segment segment = Segment.parseFromBytes(recvPacket.getData());
+        char checksum = segment.calculateChecksum(segment, IPAddress.getAddress(), InetAddress.getLocalHost().getAddress());
         if (checksum + segment.getHeader().getChecksum() != 0xFFFF) {
             System.out.println("Checksum failed. Discarding segment " + segment.getHeader().getSequence_number());
             return null;
@@ -331,7 +332,7 @@ public class Client {
             System.out.println("Self : " + InetAddress.getLocalHost().getHostAddress());
             System.out.println("Remote : " + InetAddress.getByName("10.139.60.135").getHostAddress());
 
-            char checksum = segment.calculateChecksum(segment, InetAddress.getByName("10.139.60.135").getAddress(), InetAddress.getLocalHost().getAddress(), 100);
+            char checksum = segment.calculateChecksum(segment, InetAddress.getByName("10.139.60.135").getAddress(), InetAddress.getLocalHost().getAddress());
             segment.getHeader().setChecksum((char)((~checksum) & 0xFFFF));
             //segment.getHeader().setChecksum((char)checksum);
             System.out.println(segment.toString());

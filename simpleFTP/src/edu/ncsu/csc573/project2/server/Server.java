@@ -24,7 +24,7 @@ public class Server {
     float p;    //The packet loss probability
     DatagramSocket serverSocket;    //The server side datagram socket
     byte recvBuffer[];       //The receive buffer
-    int mss;
+    //int mss;
     Segment segments[];
     public Server(int portNumber, String fileName, float p) {
         this.portNumber = portNumber;
@@ -43,7 +43,7 @@ public class Server {
         //Server operation code
         while (true) {
             //Get the MSS from the client
-            try {
+            /*try {
                 recvBuffer = new byte[Constants.kMaxBufferSize];
                 DatagramPacket mssPacket = new DatagramPacket(recvBuffer, recvBuffer.length);
                 serverSocket.receive(mssPacket);
@@ -52,32 +52,39 @@ public class Server {
                 //System.out.println("Received MSS = " + mss);
             } catch (Exception e) {
                 e.printStackTrace();
-            }
+            }*/
             
-            recvBuffer = new byte[this.mss];
+            recvBuffer = new byte[Constants.kMaxBufferSize];
             //Resize the send and receive buffers
             int seqNumber = 0;
             while (true) {
                 DatagramPacket receivePacket = new DatagramPacket(recvBuffer, recvBuffer.length);
                 try {
                     serverSocket.receive(receivePacket);
-                    Segment recvSegment = Segment.parseFromBytes(receivePacket.getData(), this.mss);
+                    byte packetData[] = new byte[receivePacket.getLength()];
+                    System.arraycopy(receivePacket.getData(), 0, packetData, 0, receivePacket.getLength());
+                    Segment recvSegment = Segment.parseFromBytes(packetData);
                     //System.out.println("Self : " + InetAddress.getLocalHost().getHostAddress());
                     //System.out.println("Remote : " + receivePacket.getAddress().getHostAddress());;
-                    char checksum = recvSegment.calculateChecksum(recvSegment, receivePacket.getAddress().getAddress(), InetAddress.getLocalHost().getAddress(), this.mss);
+                    char checksum = recvSegment.calculateChecksum(recvSegment, receivePacket.getAddress().getAddress(), InetAddress.getLocalHost().getAddress());
                     if (checksum + recvSegment.getHeader().getChecksum() != 0xFFFF) {
                         System.out.println("Checksum failed. Discarding segment " + recvSegment.getHeader().getSequence_number());
                     } else {
                         if (recvSegment.getHeader().getSegmentType() == Constants.kFinType) {
                             //Assemble the segments to contiguous file content
-                            byte fileData[] = new byte[mss * (seqNumber + 1)];
+                            int fileDataLength = 0;
+                            for (int i = 0; i < (seqNumber + 1); ++i) {
+                                fileDataLength += segments[i].getData().length;
+                            }
+                            
+                            byte fileData[] = new byte[fileDataLength];
                             int counter = 0;
                             for (int i = 0; i < (seqNumber + 1); ++i) {
                                 if (segments[i] == null) {
                                     System.out.println("Index " + i + " is null");
                                 } else {
+                                    byte segmentData[] = segments[i].getData();
                                     for (int j = 0; j < segments[i].getData().length; ++j) {
-                                        byte segmentData[] = segments[i].getData();
                                         fileData[counter++] = segmentData[j];
                                     }
                                 }
@@ -117,7 +124,7 @@ public class Server {
                             if (seqNumber == 0 || (seqNumber > 0 && segments[seqNumber - 1] != null && segments[seqNumber - 1].isAcknowledged())) {
                                 //System.out.println("Received : " + recvSegment.getHeader().getSequence_number() + " Acknowledged : " + recvSegment.isAcknowledged());
                                 Segment sendSegment = new Segment(recvSegment.getHeader().getSequence_number(), Constants.kAckType, (char) 0, null);
-                                checksum = sendSegment.calculateChecksum(sendSegment, receivePacket.getAddress().getAddress(), InetAddress.getLocalHost().getAddress(), this.mss);
+                                checksum = sendSegment.calculateChecksum(sendSegment, receivePacket.getAddress().getAddress(), InetAddress.getLocalHost().getAddress());
                                 sendSegment.getHeader().setChecksum((char)((~checksum) & 0xFFFF));
                                 DatagramPacket sendPacket = new DatagramPacket(sendSegment.getSegment(), sendSegment.getSegment().length, receivePacket.getAddress(), receivePacket.getPort());
                                 
@@ -150,11 +157,11 @@ public class Server {
             DatagramPacket packet = new DatagramPacket(recvBuffer, recvBuffer.length);
             serverSocket.receive(packet);
             
-            Segment segment = Segment.parseFromBytes(packet.getData(), 100);
+            Segment segment = Segment.parseFromBytes(packet.getData());
             System.out.println("Self : " + InetAddress.getLocalHost().getHostAddress());
             System.out.println("Remote : " + packet.getAddress().getHostAddress());
             
-            char checksum = segment.calculateChecksum(segment, packet.getAddress().getAddress(), InetAddress.getLocalHost().getAddress(), 100);
+            char checksum = segment.calculateChecksum(segment, packet.getAddress().getAddress(), InetAddress.getLocalHost().getAddress());
             System.out.println("calculated checksum = " + (int)checksum);
             System.out.println(segment.toString());
         } catch (Exception e) {
