@@ -26,9 +26,12 @@ public class Server {
     byte recvBuffer[];       //The receive buffer
     //int mss;
     Segment segments[];
+    FileOutputStream fos;
+    boolean isFirstPacket;
     public Server(int portNumber, String fileName, float p) {
         this.portNumber = portNumber;
         this.fileName = fileName;
+        this.isFirstPacket = true;
         this.p = p;
         segments = new Segment[Constants.kSegmentBufferSize];
         for (int i = 0; i < segments.length; ++i) {
@@ -53,7 +56,6 @@ public class Server {
             } catch (Exception e) {
                 e.printStackTrace();
             }*/
-            
             recvBuffer = new byte[Constants.kMaxBufferSize];
             //Resize the send and receive buffers
             int seqNumber = 0;
@@ -61,6 +63,14 @@ public class Server {
                 DatagramPacket receivePacket = new DatagramPacket(recvBuffer, recvBuffer.length);
                 try {
                     serverSocket.receive(receivePacket);
+                    if (isFirstPacket) {
+                        try {
+                            fos = new FileOutputStream(new File(fileName));
+                        } catch (Exception e) {
+                            System.err.println("Failed to create output stream for file : " + fileName);
+                        }
+                        isFirstPacket = false;
+                    }
                     byte packetData[] = new byte[receivePacket.getLength()];
                     System.arraycopy(receivePacket.getData(), 0, packetData, 0, receivePacket.getLength());
                     Segment recvSegment = Segment.parseFromBytes(packetData);
@@ -72,7 +82,10 @@ public class Server {
                     } else {
                         if (recvSegment.getHeader().getSegmentType() == Constants.kFinType) {
                             //Assemble the segments to contiguous file content
-                            int fileDataLength = 0;
+                            this.isFirstPacket = true;
+                            fos.flush();
+                            fos.close();
+                            /*int fileDataLength = 0;
                             for (int i = 0; i < (seqNumber + 1); ++i) {
                                 fileDataLength += segments[i].getData().length;
                             }
@@ -98,8 +111,9 @@ public class Server {
                                 fos.close();
                             } catch (Exception e) {
                                 System.err.println("Failed to write to the specified file.");
-                            }
+                            }*/
                             
+                            //Reset the segments array
                             segments = new Segment[100];
                             for (int i = 0; i < segments.length; ++i) {
                                 segments[i] = null;
@@ -123,6 +137,11 @@ public class Server {
                             
                             if (seqNumber == 0 || (seqNumber > 0 && segments[seqNumber - 1] != null && segments[seqNumber - 1].isAcknowledged())) {
                                 //System.out.println("Received : " + recvSegment.getHeader().getSequence_number() + " Acknowledged : " + recvSegment.isAcknowledged());
+                                //Write the segment to the file
+                                byte segmentData[] = recvSegment.getData();
+                                fos.write(new String(segmentData).trim().getBytes());
+                               
+                                //Send the acknowledgement
                                 Segment sendSegment = new Segment(recvSegment.getHeader().getSequence_number(), Constants.kAckType, (char) 0, null);
                                 checksum = sendSegment.calculateChecksum(sendSegment, receivePacket.getAddress().getAddress(), InetAddress.getLocalHost().getAddress());
                                 sendSegment.getHeader().setChecksum((char)((~checksum) & 0xFFFF));
