@@ -159,6 +159,21 @@ public class Server {
                                 //else {
                                 //    System.out.println("Duplicate packet : " + seqNumber);
                                 //}
+                            } else {
+                                //Send last acknowledgement for last received segment
+                                int ackSeqNumber = seqNumber - 1;
+                                while (ackSeqNumber >= 0) {
+                                    if (segments[ackSeqNumber] != null && segments[ackSeqNumber].isAcknowledged()) {
+                                        break;    
+                                    }
+                                    ackSeqNumber--;
+                                }
+                                Segment sendSegment = new Segment(ackSeqNumber, Constants.kAckType, (char) 0, null);
+                                checksum = sendSegment.calculateChecksum(sendSegment, receivePacket.getAddress().getAddress(), InetAddress.getLocalHost().getAddress());
+                                sendSegment.getHeader().setChecksum((char)((~checksum) & 0xFFFF));
+                                DatagramPacket sendPacket = new DatagramPacket(sendSegment.getSegment(), sendSegment.getSegment().length, receivePacket.getAddress(), receivePacket.getPort());
+
+                                serverSocket.send(sendPacket);
                             }
                         }
                     }
