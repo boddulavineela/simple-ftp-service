@@ -68,8 +68,11 @@ public class Client {
         //Client operation code
         //LinkedList<Segment> segments = this.readFileContentsAsSegments();
         //sendData(segments);
-
+        
+        long startTime = System.nanoTime();;
         sendDataNew();
+        long endTime = System.nanoTime();
+        System.out.println("N = " + n + " MSS = " + mss + " time = " + 1.0 * (endTime - startTime) / 1000000000 + " seconds.");
     }
    
     public LinkedList<Segment> readFileContentsAsSegments() {
