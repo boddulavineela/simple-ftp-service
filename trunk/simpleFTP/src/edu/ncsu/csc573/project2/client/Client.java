@@ -65,12 +65,10 @@ public class Client {
         } catch (Exception e) {
             System.err.println("Failed to create file input stream"); 
         }
-        //Client operation code
-        //LinkedList<Segment> segments = this.readFileContentsAsSegments();
-        //sendData(segments);
         
-        long startTime = System.nanoTime();;
-        sendDataNew();
+        long startTime = System.nanoTime();
+        sendDataSelRepeat();
+        //sendDataGoBackN();
         long endTime = System.nanoTime();
         System.out.println("N = " + n + " MSS = " + mss + " time = " + 1.0 * (endTime - startTime) / 1000000000 + " seconds.");
     }
@@ -136,7 +134,126 @@ public class Client {
         return nextByte;
     } 
     
-    public void sendDataNew() {
+    public void sendDataSelRepeat() {
+        
+        int low = 0;
+        int high = Math.min(numSegments, n);
+        LinkedList<Segment> window = new LinkedList<Segment>();
+        IPAddress = null;
+        try {
+            IPAddress = InetAddress.getByName(serverHostName);
+        } catch (Exception e) {
+            System.err.println("Failed to get server by hostname");
+        }
+
+        //Send the window size N to the server
+        String nString = "" + n;
+        try {
+            DatagramPacket nPacket = new DatagramPacket(nString.getBytes(), nString.length(), IPAddress, serverPortNumber);
+            clientSocket.send(nPacket);
+        } catch (Exception e) {
+            System.err.println("Could not send n to the server");
+        }
+        
+        //Initialize the first window
+        for (int i = low; i < high; ++i) {
+            Segment segment = readNextSegment();
+            window.add(segment);
+        }
+        //Send the first window
+        for (int i = low; i < high; ++i) {
+            this.sendSegment(window.get(i));
+        }
+        int sentCount = 0; 
+        while (sentCount < numSegments) {
+            try {
+                //System.out.println("Outside Low : " + low + " , High : " + high);
+                Segment segment = this.receiveSegment();
+                if (segment != null) { 
+                    /*System.out.println("Received acknowledgement for segment : " + segment.getHeader().getSequence_number());
+                    System.out.print("Window : ");
+                    for (int i = 0; i < window.size(); ++i) {
+                        System.out.print(window.get(i).getHeader().getSequence_number());
+                        if (window.get(i).isAcknowledged()) {
+                            System.out.print("t");
+                        } else {
+                            System.out.print("f");
+                        }
+                        System.out.print(" ");
+                    }
+                    System.out.println();*/
+
+                    int ack_segment = segment.getHeader().getSequence_number();
+                    
+                    //System.out.println("low : " + low + " numSegments - 1 : " + (numSegments - 1));
+                    if (low <= numSegments - 1) {
+                         if (ack_segment < low) {
+                         } else if (ack_segment == low) {
+                             //System.out.println("Setting segment : " + window.getFirst().getHeader().getSequence_number() + " = true");
+                             window.getFirst().setAcknowledged(true);
+                             sentCount++;
+                             //System.out.println("sentCount : " + sentCount);
+                             if (high <= numSegments - 1) {                            
+                                 for (int i = 0; i < window.size(); ++i) {
+                                     if (! window.get(0).isAcknowledged()) {
+                                         break;
+                                     }
+                                     window.removeFirst();
+                                     Segment nextSegment = readNextSegment();
+                                     if (nextSegment != null) {
+                                         window.add(nextSegment);
+                                         this.sendSegment(nextSegment);
+                                         //System.out.println("Sending segment : " + nextSegment.getHeader().getSequence_number() + " low : " + low + " high : " +high);
+                                         low++;
+                                         high++;
+                                     } else {
+                                         //System.out.println("Last window, low : " + low + " high : " + high);
+                                         low++;
+                                     }
+                                 }
+                             }
+                             //System.out.println("high : " + high + " numSegments - 1 : " + (numSegments - 1));
+                         } else if (ack_segment < high) {
+                             //System.out.println("ack_segment : " + ack_segment + " " + "low : " + low + " high : " + high);
+                             sentCount++;
+                             //System.out.println("sentCount : " + sentCount);
+                             //System.out.println("Setting segment : " + window.get(ack_segment - low).getHeader().getSequence_number() + " = true");
+                             window.get(ack_segment - low).setAcknowledged(true);
+                             //System.out.println("Setting segment : " + window.get(ack_segment - low).getHeader().getSequence_number() + " = true");
+                         }
+                        //if (low > segment.getHeader().getSequence_number()) {
+                        //    System.out.println("Cummulative acknowledgement occurred");
+                        //}
+                        //System.out.println("low : " + low + " sequence umber = " + segment.getHeader().getSequence_number());
+                     }
+                }
+                /*for (int i = 0; i < window.size(); ++i) {
+                    System.out.print(window.get(i).getHeader().getSequence_number() + " ");
+                }
+                System.out.println();*/
+            } catch (SocketTimeoutException se) {
+                //A timeout occurred
+                System.out.println("Timeout, sequence number = " + window.peek().getHeader().getSequence_number());
+                for (int i = 0; i < window.size(); ++i) {
+                    //System.out.println("window.get("+ i + ").isAcknowledged() = " + window.get(i).isAcknowledged());
+                    if (window.get(i) != null && ! window.get(i).isAcknowledged()) {
+                        this.sendSegment(window.get(i));
+                        //System.out.println("Retransmitting : " + window.get(i).getHeader().getSequence_number());
+                    }
+                }
+                //System.out.println();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        
+        Segment finSegment = new Segment(Constants.kFinType, (char)0, null);
+        this.sendSegment(finSegment);
+        clientSocket.close();
+
+    }
+
+    public void sendDataGoBackN() {
         //System.out.println("Number of segments = " + segments.size());
         boolean sent[] = new boolean[numSegments];
         for (int i = 0; i < sent.length; ++i) {
@@ -185,16 +302,21 @@ public class Client {
 
                      //Cummulative acknowledgements
                      if (low <= numSegments - 1) {
-                        //if (low > segment.getHeader().getSequence_number()) {
-                        //    System.out.println("Cummulative acknowledgement occurred");
-                        //}
+                        /*if (low < segment.getHeader().getSequence_number()) {
+                            System.out.println("Cummulative acknowledgement occurred");
+                        }*/
+                        /*System.out.print("Window : ");
+                        for (int i = 0; i < window.size(); ++i) {
+                            System.out.print(window.get(i).getHeader().getSequence_number() + " ");
+                        } 
+                        System.out.println();*/
                         //System.out.println("low : " + low + " sequence umber = " + segment.getHeader().getSequence_number());
                         int cnt = low;
                         for (;cnt <= segment.getHeader().getSequence_number(); ++cnt) {
+                            window.removeFirst();
                             sent[low] = true;
                             low++;
                             if (high <= numSegments - 1) {
-                                Segment poppedSegment = window.removeFirst();
                                 Segment nextSegment = readNextSegment();
                                 window.add(nextSegment);
                                 //System.out.println("Sending segment : " + nextSegment.getHeader().getSequence_number());
