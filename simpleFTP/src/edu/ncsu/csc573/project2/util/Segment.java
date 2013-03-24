@@ -65,7 +65,7 @@ public class Segment {
     }
 
     public void setAcknowledged(boolean acknowledged) {
-        this.acknowledged = true;
+        this.acknowledged = acknowledged;
     }
     
     public void setData(byte data[]) {
