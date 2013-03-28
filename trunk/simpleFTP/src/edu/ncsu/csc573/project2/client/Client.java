@@ -8,6 +8,8 @@ import edu.ncsu.csc573.project2.util.Constants;
 import edu.ncsu.csc573.project2.util.Segment;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -34,16 +36,18 @@ public class Client {
     String fileContents;    //String to store the file contents
     byte recvBuffer[];   //The receive buffer
     InetAddress IPAddress;  //The IPAddress of the server 
+    int method;         //The transfer method : 0 - Go Back N, 1 - Sel. Repeat
     File file;
     long remainingLength;
     int numSegments;
     FileInputStream fis;    //The file input stream to read file contents
     
     public Client(String serverHostName, int serverPortNumber,
-                  String fileName, int n, int mss) {
+                  String fileName, int n, int mss, int method) {
         this.serverHostName = serverHostName;
         this.serverPortNumber = serverPortNumber;
         this.fileName = fileName;
+        this.method = method;
         this.n = n;
         this.mss = mss;
 
@@ -64,11 +68,17 @@ public class Client {
             fis = new FileInputStream(file);
         } catch (Exception e) {
             System.err.println("Failed to create file input stream"); 
-        }
+      }
         
         long startTime = System.nanoTime();
-        sendDataSelRepeat();
-        //sendDataGoBackN();
+
+        if (method == 0) {
+            System.out.println("Go Back N");
+            sendDataGoBackN();
+        } else {
+            System.out.println("Selective Repeat");
+            sendDataSelRepeat();
+        }
         long endTime = System.nanoTime();
         System.out.println("N = " + n + " MSS = " + mss + " time = " + 1.0 * (endTime - startTime) / 1000000000 + " seconds.");
     }
@@ -147,14 +157,22 @@ public class Client {
         }
 
         //Send the window size N to the server
-        String nString = "" + n;
         try {
-            DatagramPacket nPacket = new DatagramPacket(nString.getBytes(), nString.length(), IPAddress, serverPortNumber);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            DataOutputStream dos = new DataOutputStream(baos);
+            dos.writeInt(n);
+            byte data[] = baos.toByteArray();
+            /*for (int i = 0; i < data.length; ++i) {
+                System.out.print(data[i] + " ");
+            }
+            System.out.println();*/
+            DatagramPacket nPacket = new DatagramPacket(data, data.length, IPAddress, serverPortNumber);
             clientSocket.send(nPacket);
+            baos.close();
+            dos.close();
         } catch (Exception e) {
             System.err.println("Could not send n to the server");
         }
-        
         //Initialize the first window
         for (int i = low; i < high; ++i) {
             Segment segment = readNextSegment();
@@ -469,7 +487,7 @@ public class Client {
     }
    
     public static void testRdtSend() {
-        Client client = new Client("127.0.0.1", Constants.kServerPortNumber, "resources/rfc/rfc861.txt", 5, 100);
+        Client client = new Client("127.0.0.1", Constants.kServerPortNumber, "resources/rfc/rfc861.txt", 5, 100, 0);
 
         Segment segment;
         while ((segment = client.readNextSegment()) != null) {
@@ -487,16 +505,19 @@ public class Client {
                 //Client client = new Client("127.0.0.1", Constants.kServerPortNumber, "resources/rfc/rfc2328.txt", 100, 500);
         
         //testSegmentTransfer();
-        if (args.length != 5) {
+        if (args.length == 5) {
+            Client client = new Client(args[0], Integer.parseInt(args[1]),
+                                       args[2], Integer.parseInt(args[3]), 
+                                       Integer.parseInt(args[4]), 0);
+        } else if (args.length == 6) {
+            Client client = new Client(args[0], Integer.parseInt(args[1]),
+                                       args[2], Integer.parseInt(args[3]),
+                                       Integer.parseInt(args[4]), Integer.parseInt(args[5]));    
+        } else { 
             System.err.println("Usage : java Client <server-host-name> <server-port#> " + 
-                               "<file-name> <N> <MSS>");
+                               "<file-name> <N> <MSS> [<method>]");
             System.exit(0);
         }
-
-        Client client = new Client(args[0], Integer.parseInt(args[1]),
-                                   args[2], Integer.parseInt(args[3]), 
-                                   Integer.parseInt(args[4]));
-
         /*Client client = new Client(args[0], Integer.parseInt(args[1]),
                                    args[2],
                                    16,
