@@ -3,6 +3,12 @@
 
 server_ip=127.0.0.1
 server_port=7735
+method=0
+
+if [ $# -gt 0 ] 
+  then
+    method=$1
+fi
 
 rm -f temp
 rm -f results_task2
@@ -12,7 +18,7 @@ for ((i=1; i<=5; i++)) do
     for ((mss=100; mss<=1000; mss+=100)) 
     do
         echo 'MSS = ' $mss
-        java -classpath ../dist/simpleFTP.jar edu.ncsu.csc573.project2.client.Client $server_ip $server_port ../resources/rfc/rfc1mb.txt 64 $mss >> output
+        java -classpath ../dist/simpleFTP.jar edu.ncsu.csc573.project2.client.Client $server_ip $server_port ../resources/rfc/rfc1mb.txt 64 $mss $method >> output
     done
     grep 'N =' output >> temp
     rm output

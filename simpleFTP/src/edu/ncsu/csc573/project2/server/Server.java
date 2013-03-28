@@ -6,7 +6,8 @@ package edu.ncsu.csc573.project2.server;
 
 import edu.ncsu.csc573.project2.util.Constants;
 import edu.ncsu.csc573.project2.util.Segment;
-import java.io.ByteArrayOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.net.DatagramPacket;
@@ -26,14 +27,16 @@ public class Server {
     byte recvBuffer[];       //The receive buffer
     //int mss;
     int n;      //The receiver window size (Selective Repeat)
+    int method;     //The transfer method (0 - Go Back N, 1 - Sel. Repeat)
     Segment segments[];
     FileOutputStream fos;
     boolean isFirstPacket;
-    public Server(int portNumber, String fileName, float p) {
+    public Server(int portNumber, String fileName, float p, int method) {
         this.portNumber = portNumber;
         this.fileName = fileName;
         this.isFirstPacket = true;
         this.p = p;
+        this.method = method;
         segments = new Segment[Constants.kSegmentBufferSize];
         for (int i = 0; i < segments.length; ++i) {
             segments[i] = null;
@@ -43,8 +46,13 @@ public class Server {
         } catch (Exception e) {
             System.err.println("Failed to create server datagram socket");
         }
-        receiveDataSelRepeat();
-        //receiveDataGoBackN();
+        if (method == 0) {
+            System.out.println("Go Back N");
+            receiveDataGoBackN();
+        } else {
+            System.out.println("Selective Repeat");
+            receiveDataSelRepeat();
+        }
     }
    
     public void receiveDataSelRepeat() {
@@ -56,8 +64,16 @@ public class Server {
                 recvBuffer = new byte[Constants.kMaxBufferSize];
                 DatagramPacket nPacket = new DatagramPacket(recvBuffer, recvBuffer.length);
                 serverSocket.receive(nPacket);
-                String nString = new String(nPacket.getData());
-                this.n = Integer.parseInt(nString.trim());
+                byte data[] = nPacket.getData();
+                ByteArrayInputStream bais = new ByteArrayInputStream(data);
+                DataInputStream dis = new DataInputStream(bais);
+                /*for (int i = 0; i < data.length; ++i) {
+                    System.out.print(data[i] + " ");
+                }
+                System.out.println();*/
+                this.n = dis.readInt();
+                bais.close();
+                dis.close();
 
                 segments = new Segment[this.n];
                 for (int i = 0; i < segments.length; ++i) {
@@ -340,11 +356,14 @@ public class Server {
    
 
     public static void main(String[] args) {
-        if (args.length != 3) {
-            System.err.println("Usage : java Server <port#> <file-name> <loss probability>");
+        if (args.length == 3) {
+            Server server = new Server(Integer.parseInt(args[0]), args[1], Float.parseFloat(args[2]), 0);
+        } else if (args.length == 4) {
+            Server server = new Server(Integer.parseInt(args[0]), args[1], Float.parseFloat(args[2]), Integer.parseInt(args[3]));    
+        } else {
+            System.err.println("Usage : java Server <port#> <file-name> <loss probability> [<method>]");
             System.exit(0);
         }
-        Server server = new Server(Integer.parseInt(args[0]), args[1], Float.parseFloat(args[2]));
         //Server server = new Server(Constants.kServerPortNumber, "/Users/svpendse1/Desktop/rfc_transfer.txt", 0.05f);
         //testSegmentTransfer();
     }
