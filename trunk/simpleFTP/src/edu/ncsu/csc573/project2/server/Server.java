@@ -13,6 +13,8 @@ import java.io.FileOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 
 /**
  *
@@ -62,19 +64,18 @@ public class Server {
             //Get the MSS from the client
             try {
                 recvBuffer = new byte[Constants.kMaxBufferSize];
-                DatagramPacket nPacket = new DatagramPacket(recvBuffer, recvBuffer.length);
-                serverSocket.receive(nPacket);
-                byte data[] = nPacket.getData();
-                ByteArrayInputStream bais = new ByteArrayInputStream(data);
-                DataInputStream dis = new DataInputStream(bais);
+                ServerSocket serverSocket = new ServerSocket(1234);
+                Socket mssSocket = serverSocket.accept(); 
+                DataInputStream dis = new DataInputStream(mssSocket.getInputStream()); 
                 /*for (int i = 0; i < data.length; ++i) {
                     System.out.print(data[i] + " ");
                 }
                 System.out.println();*/
                 this.n = dis.readInt();
-                bais.close();
                 dis.close();
-
+                mssSocket.close();
+                serverSocket.close();
+                
                 segments = new Segment[this.n];
                 for (int i = 0; i < segments.length; ++i) {
                     segments[i] = null;
