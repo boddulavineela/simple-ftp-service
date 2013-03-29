@@ -17,6 +17,7 @@ import java.io.InputStreamReader;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
@@ -158,18 +159,15 @@ public class Client {
 
         //Send the window size N to the server
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            DataOutputStream dos = new DataOutputStream(baos);
+            Socket mssSocket = new Socket(serverHostName, 1234);
+            DataOutputStream dos = new DataOutputStream(mssSocket.getOutputStream());
             dos.writeInt(n);
-            byte data[] = baos.toByteArray();
             /*for (int i = 0; i < data.length; ++i) {
                 System.out.print(data[i] + " ");
             }
             System.out.println();*/
-            DatagramPacket nPacket = new DatagramPacket(data, data.length, IPAddress, serverPortNumber);
-            clientSocket.send(nPacket);
-            baos.close();
             dos.close();
+            mssSocket.close();
         } catch (Exception e) {
             System.err.println("Could not send n to the server");
         }
