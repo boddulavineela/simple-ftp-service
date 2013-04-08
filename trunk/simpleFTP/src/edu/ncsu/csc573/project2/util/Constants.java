@@ -13,7 +13,7 @@ public class Constants {
     public static final int kServerPortNumber = 7735;
     public static final int kSegmentHeaderSize = 8;
     public static final int kSegmentBufferSize = 100;
-    public static final int kSoTimeout = 20;
+    public static final int kSoTimeout = 50;
     
     public static String kServerHostName = "127.0.0.1";
 

@@ -1,7 +1,7 @@
 #!/bin/sh
 #Task 1
 
-server_ip=127.0.0.1
+server_ip=10.139.61.41
 server_port=7735
 method=0
 
