@@ -158,7 +158,7 @@ public class Server {
                                 for (int i = 0; i < segments.length; ++i) {
                                     if (segments[0] != null) {
                                         byte segmentData[] = segments[0].getData();
-                                        fos.write(new String(segmentData).trim().getBytes());
+                                        fos.write(new String(segmentData).replaceAll("" + (char)26, "").getBytes());
                                         for (int j = 1; j < segments.length; ++j) {
                                             segments[j - 1] = segments[j]; 
                                             segments[j] = null;
@@ -303,7 +303,7 @@ public class Server {
                                     segments[seqNumber] = recvSegment;
                                     //Write the segment to the file
                                     byte segmentData[] = recvSegment.getData();
-                                    fos.write(new String(segmentData).trim().getBytes());
+                                    fos.write(new String(segmentData).replaceAll("" + (char)26, "").getBytes());
  
                                 }
                                 //Duplicate packets. Just discard.

@@ -1,82 +1,90 @@
 function proj_visuals
 
-%task1
+%Task 1
 
-figure(1);
-data = load('task1/results_task1');
-
-plot(log2(data(:, 1)), data(:, 2), 'rs-', 'LineWidth', 2, 'MarkerSize', 1, 'MarkerFaceColor' , [.49 1 .63], 'MarkerEdgeColor', 'k');
-hold on;
-confInterval = (data(:, 4) - data(:, 3))/2;
-errorbar(log2(data(:, 1)), data(:, 2), confInterval);
-
-grid on;
-
-hTitle = title('Transfer Time (sec) vs Window Size (N) (Log Scale)');
-hXLabel = xlabel('Window Size (log scale) (log (N))');
-hYLabel = ylabel('Transfer Time (sec)');
-hLegend = legend({'Timeout = 20 msec'}, 'Location', 'Best');
-
-set(gca,'FontName','Helvetica')
-
-set([hTitle, hXLabel, hYLabel, hLegend], 'FontName', 'Helvetica', 'FontWeight', 'bold');
-set([hLegend, gca], 'FontSize', 10);
-set([hXLabel, hYLabel], 'FontSize', 12)
-set(hTitle,'FontSize', 14, 'FontWeight', 'bold');
-grid on
-set(gca, ...
-'Box'         , 'off'     , ...
-'TickDir'     , 'out'     , ...
-'TickLength'  , [.02 .02] , ...
-'XMinorTick'  , 'on'      , ...
-'YMinorTick'  , 'on'      , ...
-'YGrid'       , 'on'      , ...
-'XColor'      , [.3 .3 .3], ...
-'YColor'      , [.3 .3 .3], ...
-'LineWidth'   , 1         );
-axis fill
-set(gcf, 'PaperPositionMode', 'auto');
-print('-depsc2', 'task1/figure_task1.eps');
-close;
-
-%task2
-
-figure(2);
-data = load('task2/results_task2');
-
-plot(log2(data(:, 1)), data(:, 2), 'rs-', 'LineWidth', 2, 'MarkerSize', 1, 'MarkerFaceColor' , [.49 1 .63], 'MarkerEdgeColor', 'k');
-hold on;
-confInterval = (data(:, 4) - data(:, 3))/2;
-errorbar(log2(data(:, 1)), data(:, 2), confInterval);
-
-hTitle = title('Transfer Time (sec) vs Segment Size (bytes)');
-hXLabel = xlabel('Segment Size (bytes)');
-hYLabel = ylabel('Transfer Time (sec)');
-hLegend = legend({'Timeout = 20 msec'}, 'Location', 'Best');
-
-set(gca,'FontName','Helvetica')
-
-set([hTitle, hXLabel, hYLabel, hLegend], 'FontName', 'Helvetica', 'FontWeight', 'bold');
-set([hLegend, gca], 'FontSize', 10);
-set([hXLabel, hYLabel], 'FontSize', 12)
-set(hTitle,'FontSize', 14, 'FontWeight', 'bold');
-grid on
-set(gca, ...
-'Box'         , 'off'     , ...
-'TickDir'     , 'out'     , ...
-'TickLength'  , [.02 .02] , ...
-'XMinorTick'  , 'on'      , ...
-'YMinorTick'  , 'on'      , ...
-'YGrid'       , 'on'      , ...
-'XColor'      , [.3 .3 .3], ...
-'YColor'      , [.3 .3 .3], ...
-'LineWidth'   , 1         );
-axis fill
-set(gcf, 'PaperPositionMode', 'auto');
-print('-depsc2', 'task2/figure_task2.eps');
-close;
+    data = load('task1/results_gobackn_twomc');
+    data(:, 1) = log2(data(:, 1));
+    generate_single_plot(data, 'Transfer Time (sec) vs Window Size (log scale) (Go Back N)',...
+                         'Window Size (log scale)', 'Transfer Time (sec)',...
+                         {'Timeout = 20 msec'}, 'task1/figure_task1_gobackn.eps', 1);
+                     
+    data = load('task1/results_selrepeat_twomc');
+    data(:, 1) = log2(data(:, 1));
+    generate_single_plot(data, 'Transfer Time (sec) vs Window Size (log scale) (Sel. Repeat)',...
+                         'Window Size (log scale)', 'Transfer Time (sec)',...
+                         {'Timeout = 20 msec'}, 'task1/figure_task1_selrepeat.eps', 1);
+                     
+%Task 2
+    data = load('task2/results_gobackn_twomc');
+    generate_single_plot(data, 'Transfer Time (sec) vs Segment Size (bytes) (Go Back N)',...
+                         'Segment Size (bytes)', 'Transfer Time (sec)',...
+                         {'Timeout = 20 msec'}, 'task2/figure_task2_gobackn.eps', 1);
+    
+    data = load('task2/results_task2');
+    generate_single_plot(data, 'Transfer Time (sec) vs Segment Size (bytes) (Sel. Repeat)',...
+                         'Segment Size (bytes)', 'Transfer Time (sec)',...
+                         {'Timeout = 20 msec'}, 'task2/figure_task2_selrepeat.eps', 1);                 
+                     
+%Task 3
+    data = load('task3/results_gobackn_twomc');
+    prob = 0.01:0.01:0.1;    
+    data = [prob' data];
+    generate_single_plot(data, 'Transfer Time (sec) vs Segment Loss Probability (Go Back N)' ,...
+                         'Loss Probability', 'Transfer Time (sec)',...
+                         {'Timeout = 20 msec'}, 'task3/figure_task3_gobackn.eps', 1);
+                     
+    data = load('task3/results_selrepeat_twomc');
+    prob = 0.01:0.01:0.1;    
+    data = [prob' data];
+    generate_single_plot(data, 'Transfer Time (sec) vs Segment Loss Probability (Sel. Repeat)' ,...
+                         'Loss Probability', 'Transfer Time (sec)',...
+                         {'Timeout = 20 msec'}, 'task3/figure_task3_selrepeat.eps', 1);                     
+                     
+                     
 end
 
+
+function generate_single_plot(data, ttl, xlbl, ylbl, lgnd, outputfilename, plotConfInterval)
+
+figure(1);
+confInterval = (data(:, 4) - data(:, 3))/2;
+
+plot(data(:, 1), data(:, 2), 'rs-', 'LineWidth', 2, 'MarkerSize', 1, 'MarkerFaceColor' , [.49 1 .63], 'MarkerEdgeColor', 'k');
+hold on;
+confInterval = (data(:, 4) - data(:, 3))/2;
+if (plotConfInterval)
+    errorbar(data(:, 1), data(:, 2), confInterval);      
+end
+grid on;
+
+hTitle = title(ttl);
+hXLabel = xlabel(xlbl);
+hYLabel = ylabel(ylbl);
+hLegend = legend(lgnd, 'Location', 'Best');
+
+set(gca,'FontName','Helvetica')
+
+set([hTitle, hXLabel, hYLabel, hLegend], 'FontName', 'Helvetica', 'FontWeight', 'bold');
+set([hLegend, gca], 'FontSize', 10);
+set([hXLabel, hYLabel], 'FontSize', 12)
+set(hTitle,'FontSize', 14, 'FontWeight', 'bold');
+grid on
+set(gca, ...
+    'Box'         , 'off'     , ...
+    'TickDir'     , 'out'     , ...
+    'TickLength'  , [.02 .02] , ...
+    'XMinorTick'  , 'on'      , ...
+    'YMinorTick'  , 'on'      , ...
+    'YGrid'       , 'on'      , ...
+    'XColor'      , [.3 .3 .3], ...
+    'YColor'      , [.3 .3 .3], ...
+    'LineWidth'   , 1         );
+axis fill
+set(gcf, 'PaperPositionMode', 'auto');
+print('-depsc2', outputfilename);
+close;
+
+end
 
 % %task2 1K
 % 

@@ -117,6 +117,9 @@ public class Client {
                 return null;
             }
             byte segmentData[] = new byte[mss - Constants.kSegmentHeaderSize];
+            for (int i = 0; i < segmentData.length; ++i) {
+                segmentData[i] = 26;    //EOF
+            }
             int count = 0;
             byte nextByte = -1;
             while (count < segmentData.length) {
