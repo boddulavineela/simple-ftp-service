@@ -73,18 +73,15 @@ RUN
                  can change the permissions using chmod 750 <script_name>.sh
 
 
-    !!! NOTE : Make sure to change the $server_ip variable in the runscript_client.sh 
-               files for each task.
-
     -> TASK 1 : Effect of N (Enter the "task1" directory which is located inside the 
                 "proj2" directory)
         =) GO BACK N
             
             In a terminal tab/window : 
-            - Server : execute -> sh runscript_server.sh 0
+            - Server : execute -> sh runscript_server.sh <filename> [0]
 
             In a separate terminal tab/window : 
-            - Client : execute -> sh runscript_client.sh 0
+            - Client : execute -> sh runscript_client.sh <server_ip> [0]
 
             These scripts will execute the client and the server  
             with the Go-Back-N strategy multiple times for N in 1, 2, 4, 8, 16, 
@@ -94,10 +91,10 @@ RUN
         =) SEL. REPEAT 
             
             In a terminal tab/window : 
-            - Server : execute -> sh runscript_server.sh 1
+            - Server : execute -> sh runscript_server.sh <filename> 1
 
             In a separate terminal tab/window : 
-            - Client : execute -> sh runscript_client.sh 1
+            - Client : execute -> sh runscript_client.sh <server_ip> 1
 
             These scripts will execute the client and the server  
             with the Selective Repeat strategy multiple times for N in 1, 2, 4, 8, 
@@ -109,10 +106,10 @@ RUN
         =) GO BACK N
             
             In a terminal tab/window : 
-            - Server : execute -> sh runscript_server.sh 0
+            - Server : execute -> sh runscript_server.sh <filename> [0]
 
             In a separate terminal tab/window : 
-            - Client : execute -> sh runscript_client.sh 0
+            - Client : execute -> sh runscript_client.sh <server_ip> [0]
 
             These scripts will execute the client and the server  with the Go-Back-N 
             strategy multiple times for MSS in 100, 200, 300, 400, 500, 600, 700, 
@@ -122,10 +119,10 @@ RUN
         =) SEL. REPEAT 
             
             In a terminal tab/window : 
-            - Server : execute -> sh runscript_server.sh 1
+            - Server : execute -> sh runscript_server.sh <filename> 1
 
             In a separate terminal tab/window : 
-            - Client : execute -> sh runscript_client.sh 1
+            - Client : execute -> sh runscript_client.sh <server_ip> 1
 
             These scripts will execute the client and the server with the Selective 
             Repeat strategy multiple times for MSS in 100, 200, 300, 400, 500, 600, 
@@ -137,10 +134,10 @@ RUN
         =) GO BACK N
         
             In a terminal tab/window : 
-            - Server : execute -> sh runscript_server.sh <loss probability> 0
+            - Server : execute -> sh runscript_server.sh <loss probability> <filename> [0]
 
             In a separate terminal tab/window : 
-            - Client : execute -> sh runscript_client.sh <loss probability> 0
+            - Client : execute -> sh runscript_client.sh <server_ip> <loss probability> 0 
 
             Each run of these scripts will execute the client and the server 
             with the Go-Back-N strategy for the specified loss probability. Make 
@@ -154,10 +151,10 @@ RUN
         =) SEL. REPEAT
 
             In a terminal tab/window : 
-            - Server : execute the runscript_server.sh <loss probability> 1
+            - Server : execute -> sh runscript_server.sh <loss probability> <filename> 1
 
             In a separate terminal tab/window : 
-            - Client : execute the runscript_client.sh <loss probability> 1
+            - Client : execute -> sh runscript_client.sh <server_ip> <loss probability> 1
 
             Each run of these scripts will execute the client and the server 
             with the Selective Repeatstrategy for the specified loss probability. 
