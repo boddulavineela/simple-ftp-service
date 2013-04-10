@@ -29,8 +29,8 @@ BUILD
 
     This project has a Makefile incldued in the base directory. Follow the following 
     steps to build this project : 
-        1. Make sure that you are in the base directory. You should see the Makefile
-           and the src/ directory.
+        1. Make sure that you are in the base directory i.e. the directory with the 
+           name "proj2". You should see the Makefile and the src/ directory.
         2. If a bin directory exists, execute "make clean".
         3. Compile using "make" or "make all".
         4. You should see a successful compilation and a bin/ directory created. This 
@@ -55,9 +55,9 @@ RUN
                          Repeat.
 
     To run the client, execute the command : 
-        java -classpath bin/ edu.ncsu.csc573.project2.client.Client <server-host-name> <server-port#> <file-name> <N> <MSS> [<method>]
+        java -classpath bin/ edu.ncsu.csc573.project2.client.Client <server-ip> <server-port#> <file-name> <N> <MSS> [<method>]
 
-        <server-host-name> - The server host name.
+        <server-ip> - The server host name.
         <server-port#> - The server port number (7735, for this project).
         <file-name> - The path (absolute or relative) to the file name. 
         <N> - The window size.
@@ -76,14 +76,15 @@ RUN
     !!! NOTE : Make sure to change the $server_ip variable in the runscript_client.sh 
                files for each task.
 
-    -> TASK 1 : Effect of N 
+    -> TASK 1 : Effect of N (Enter the "task1" directory which is located inside the 
+                "proj2" directory)
         =) GO BACK N
             
             In a terminal tab/window : 
-            - Server : execute the runscript_server.sh 0
+            - Server : execute -> sh runscript_server.sh 0
 
             In a separate terminal tab/window : 
-            - Client : execute the runscript_client.sh 0
+            - Client : execute -> sh runscript_client.sh 0
 
             These scripts will execute the client and the server  
             with the Go-Back-N strategy multiple times for N in 1, 2, 4, 8, 16, 
@@ -93,24 +94,25 @@ RUN
         =) SEL. REPEAT 
             
             In a terminal tab/window : 
-            - Server : execute the runscript_server.sh 1
+            - Server : execute -> sh runscript_server.sh 1
 
             In a separate terminal tab/window : 
-            - Client : execute the runscript_client.sh 1
+            - Client : execute -> sh runscript_client.sh 1
 
             These scripts will execute the client and the server  
             with the Selective Repeat strategy multiple times for N in 1, 2, 4, 8, 
             16, 32, 64, 128, 256, 512, 1024. The loss probability p is fixed to 
             0.05, and the MSS is fixed to 500 bytes.
 
-    -> TASK 2
+    -> TASK 2 : Effect of MSS (Enter the "task2" directory which is located inside the 
+                "proj2" directory)
         =) GO BACK N
             
             In a terminal tab/window : 
-            - Server : execute the runscript_server.sh 0
+            - Server : execute -> sh runscript_server.sh 0
 
             In a separate terminal tab/window : 
-            - Client : execute the runscript_client.sh 0
+            - Client : execute -> sh runscript_client.sh 0
 
             These scripts will execute the client and the server  with the Go-Back-N 
             strategy multiple times for MSS in 100, 200, 300, 400, 500, 600, 700, 
@@ -120,24 +122,25 @@ RUN
         =) SEL. REPEAT 
             
             In a terminal tab/window : 
-            - Server : execute the runscript_server.sh 1
+            - Server : execute -> sh runscript_server.sh 1
 
             In a separate terminal tab/window : 
-            - Client : execute the runscript_client.sh 1
+            - Client : execute -> sh runscript_client.sh 1
 
             These scripts will execute the client and the server with the Selective 
             Repeat strategy multiple times for MSS in 100, 200, 300, 400, 500, 600, 
             700, 800, 900, 1000. The loss probability p is fixed to 0.05, and the 
             window size N is fixed to 64 bytes.
            
-    -> TASK 3
+    -> TASK 3 : Effect of p (Enter the "task3" directory which is located inside the 
+                "proj2" directory)
         =) GO BACK N
         
             In a terminal tab/window : 
-            - Server : execute the runscript_server.sh <loss probability> 0
+            - Server : execute -> sh runscript_server.sh <loss probability> 0
 
             In a separate terminal tab/window : 
-            - Client : execute the runscript_client.sh <loss probability> 0
+            - Client : execute -> sh runscript_client.sh <loss probability> 0
 
             Each run of these scripts will execute the client and the server 
             with the Go-Back-N strategy for the specified loss probability. Make 

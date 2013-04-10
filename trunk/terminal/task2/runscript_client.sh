@@ -1,13 +1,21 @@
 #!/bin/sh
+#$1 - server ip address
+#$2 - method (optional)
 #Task 2
 
-server_ip=127.0.0.1
+if [ $# -eq 0 ]
+  then
+    echo "Usage : sh runscript_client.sh <server_ip> [<method>] (0: GoBackN, 1: SelRepeat)"
+    exit 1
+fi
+
+server_ip=$1
 server_port=7735
 method=0
 
 if [ $# -gt 0 ] 
   then
-    method=$1
+    method=$2
 fi
 
 rm -f temp
