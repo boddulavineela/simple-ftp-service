@@ -24,7 +24,12 @@ PURPOSE
     observed using the IP/UDP and sliding window concepts learnt as part of this 
     course.
 
+    TIMEOUT : We use a timeout period of 50 ms for our experiments. Our experimental 
+              setup consisted of two remote hosts on the same private network but 
+              separated by two hops. The round trip time measured via traceroute 
+              was approximately 25 ms.
 
+              Hence we set our RTO (Retransmission Timeout) = 2 * RTT (Round-Trip Time).
 BUILD
 
     This project has a Makefile incldued in the base directory. Follow the following 
@@ -87,7 +92,9 @@ RUN
             with the Go-Back-N strategy multiple times for N in 1, 2, 4, 8, 16, 
             32, 64, 128, 256, 512, 1024. The loss probability p is fixed to 
             0.05, and the MSS is fixed to 500 bytes.
-             
+        
+            This will generate the file results_task1_gobackn.txt.
+                 
         =) SEL. REPEAT 
             
             In a terminal tab/window : 
@@ -100,6 +107,8 @@ RUN
             with the Selective Repeat strategy multiple times for N in 1, 2, 4, 8, 
             16, 32, 64, 128, 256, 512, 1024. The loss probability p is fixed to 
             0.05, and the MSS is fixed to 500 bytes.
+
+            This will generate the file results_task1_selrepeat.txt.
 
     -> TASK 2 : Effect of MSS (Enter the "task2" directory which is located inside the 
                 "proj2" directory)
@@ -115,6 +124,8 @@ RUN
             strategy multiple times for MSS in 100, 200, 300, 400, 500, 600, 700, 
             800, 900, 1000. The loss probability p is fixed to 0.05, and the window 
             size N is fixed to 64 bytes.
+            
+            This will generate the file results_task2_gobackn.txt.
              
         =) SEL. REPEAT 
             
@@ -129,6 +140,8 @@ RUN
             700, 800, 900, 1000. The loss probability p is fixed to 0.05, and the 
             window size N is fixed to 64 bytes.
            
+            This will generate the file results_task2_selrepeat.txt.
+
     -> TASK 3 : Effect of p (Enter the "task3" directory which is located inside the 
                 "proj2" directory)
         =) GO BACK N
@@ -146,7 +159,7 @@ RUN
             Then execute the parsescript.sh script as follows : 
             sh parsescript.sh 0 
               
-            This will produce results in the file results_task3_0
+            This will generate the file results_task3_gobackn.txt.
 
         =) SEL. REPEAT
 
@@ -164,15 +177,15 @@ RUN
             Then execute the parsescript.sh script as follows : 
             sh parsescript.sh 1 
               
-            This will produce results in the file results_task3_1
+            This will generate the file results_task3_selrepeat.txt.
 
 
 HOW TO INTERPRET THE RESULT FILES : 
 
     Every result file consists of three columns : 
         Column 1 : The mean value for each experiment.
-        Column 2 : The low end of the confidence interval.
-        Column 3 : The high end of the confidence interval.
+        Column 2 : The low end of the confidence interval (estimated using the t-dist.) .
+        Column 3 : The high end of the confidence interval (estimated using the t-dist.).
 
 
 HOW TO GENERATE VISUALS : 
@@ -182,7 +195,7 @@ HOW TO GENERATE VISUALS :
     graphs in the respective folders i.e. task1, task2, task3. The naming convention 
     is as follows : 
     
-        figure_<task name>_<timeout_period(50)>_<method>.eps
+        figure_<task name>_<method>.eps
         
     The entire pdf document can be generated using the Makefile provided in the the 
     tex/ folder.

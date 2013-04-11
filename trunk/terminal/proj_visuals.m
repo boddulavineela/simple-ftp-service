@@ -2,43 +2,43 @@ function proj_visuals
 
 %Task 1
 
-    data = load('task1/results_gobackn_twomc');
+    data = load('task1/results_task1_gobackn.txt');
     data(:, 1) = log2(data(:, 1));
     generate_single_plot(data, 'Transfer Time (sec) vs Window Size (log scale) (Go Back N)',...
                          'Window Size (log scale)', 'Transfer Time (sec)',...
-                         {'Timeout = 20 msec'}, 'task1/figure_task1_gobackn.eps', 1);
+                         {'Timeout = 50 msec'}, 'task1/figure_task1_gobackn.eps', 1);
                      
-    data = load('task1/results_selrepeat_twomc');
+    data = load('task1/results_task1_selrepeat.txt');
     data(:, 1) = log2(data(:, 1));
     generate_single_plot(data, 'Transfer Time (sec) vs Window Size (log scale) (Sel. Repeat)',...
                          'Window Size (log scale)', 'Transfer Time (sec)',...
-                         {'Timeout = 20 msec'}, 'task1/figure_task1_selrepeat.eps', 1);
+                         {'Timeout = 50 msec'}, 'task1/figure_task1_selrepeat.eps', 1);
                      
 %Task 2
-    data = load('task2/results_gobackn_twomc');
+    data = load('task2/results_task2_gobackn.txt');
     generate_single_plot(data, 'Transfer Time (sec) vs Segment Size (bytes) (Go Back N)',...
                          'Segment Size (bytes)', 'Transfer Time (sec)',...
-                         {'Timeout = 20 msec'}, 'task2/figure_task2_gobackn.eps', 1);
+                         {'Timeout = 50 msec'}, 'task2/figure_task2_gobackn.eps', 1);
     
-    data = load('task2/results_task2');
+    data = load('task2/results_task2_selrepeat.txt');
     generate_single_plot(data, 'Transfer Time (sec) vs Segment Size (bytes) (Sel. Repeat)',...
                          'Segment Size (bytes)', 'Transfer Time (sec)',...
-                         {'Timeout = 20 msec'}, 'task2/figure_task2_selrepeat.eps', 1);                 
+                         {'Timeout = 50 msec'}, 'task2/figure_task2_selrepeat.eps', 1);                 
                      
 %Task 3
-    data = load('task3/results_gobackn_twomc');
+    data = load('task3/results_task3_gobackn.txt');
     prob = 0.01:0.01:0.1;    
     data = [prob' data];
     generate_single_plot(data, 'Transfer Time (sec) vs Segment Loss Probability (Go Back N)' ,...
                          'Loss Probability', 'Transfer Time (sec)',...
-                         {'Timeout = 20 msec'}, 'task3/figure_task3_gobackn.eps', 1);
+                         {'Timeout = 50 msec'}, 'task3/figure_task3_gobackn.eps', 1);
                      
-    data = load('task3/results_selrepeat_twomc');
+    data = load('task3/results_task3_selrepeat.txt');
     prob = 0.01:0.01:0.1;    
     data = [prob' data];
     generate_single_plot(data, 'Transfer Time (sec) vs Segment Loss Probability (Sel. Repeat)' ,...
                          'Loss Probability', 'Transfer Time (sec)',...
-                         {'Timeout = 20 msec'}, 'task3/figure_task3_selrepeat.eps', 1);                     
+                         {'Timeout = 50 msec'}, 'task3/figure_task3_selrepeat.eps', 1);                     
                      
                      
 end

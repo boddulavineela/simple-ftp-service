@@ -12,14 +12,19 @@ fi
 server_ip=$1
 server_port=7735
 method=0
-
+method_name="gobackn"
 if [ $# -gt 0 ] 
   then
     method=$2
 fi
 
+if [ $method -eq 1 ] 
+  then 
+    method_name="selrepeat"
+fi
+
 rm -f temp
-rm -f results_task1_$method
+rm -f results_task1_$method_name.txt
 
 for ((i=1; i<=5; i++)) do
     echo 'Run ' $i
@@ -32,14 +37,14 @@ for ((i=1; i<=5; i++)) do
     rm output
 done
 
-grep 'N = 1 M' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $3, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task1_$method
-grep 'N = 2 M' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $3, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task1_$method
-grep 'N = 4 M' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $3, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task1_$method
-grep 'N = 8 M' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $3, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task1_$method
-grep 'N = 16 M' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $3, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task1_$method
-grep 'N = 32 M' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $3, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task1_$method
-grep 'N = 64 M' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $3, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task1_$method
-grep 'N = 128 M' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $3, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task1_$method
-grep 'N = 256 M' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $3, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task1_$method
-grep 'N = 512 M' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $3, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task1_$method
-grep 'N = 1024 M' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $3, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task1_$method
+grep 'N = 1 M' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $3, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task1_$method_name.txt
+grep 'N = 2 M' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $3, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task1_$method_name.txt
+grep 'N = 4 M' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $3, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task1_$method_name.txt
+grep 'N = 8 M' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $3, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task1_$method_name.txt
+grep 'N = 16 M' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $3, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task1_$method_name.txt
+grep 'N = 32 M' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $3, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task1_$method_name.txt
+grep 'N = 64 M' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $3, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task1_$method_name.txt
+grep 'N = 128 M' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $3, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task1_$method_name.txt
+grep 'N = 256 M' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $3, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task1_$method_name.txt
+grep 'N = 512 M' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $3, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task1_$method_name.txt
+grep 'N = 1024 M' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $3, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task1_$method_name.txt

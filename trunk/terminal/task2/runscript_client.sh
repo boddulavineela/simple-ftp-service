@@ -12,14 +12,20 @@ fi
 server_ip=$1
 server_port=7735
 method=0
+method_name="gobackn"
 
 if [ $# -gt 0 ] 
   then
     method=$2
 fi
 
+if [ $method -eq 1 ] 
+  then
+    method_name="selrepeat"
+fi
+
 rm -f temp
-rm -f results_task2_$method
+rm -f results_task2_$method_name.txt
 
 for ((i=1; i<=5; i++)) do
     echo 'Run ' $i
@@ -32,13 +38,13 @@ for ((i=1; i<=5; i++)) do
     rm output
 done
 
-grep 'MSS = 100 ' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $6, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task2_$method
-grep 'MSS = 200 ' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $6, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task2_$method
-grep 'MSS = 300 ' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $6, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task2_$method
-grep 'MSS = 400 ' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $6, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task2_$method
-grep 'MSS = 500 ' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $6, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task2_$method
-grep 'MSS = 600 ' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $6, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task2_$method
-grep 'MSS = 700 ' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $6, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task2_$method
-grep 'MSS = 800 ' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $6, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task2_$method
-grep 'MSS = 900 ' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $6, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task2_$method
-grep 'MSS = 1000 ' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $6, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task2_$method
+grep 'MSS = 100 ' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $6, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task2_$method_name.txt
+grep 'MSS = 200 ' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $6, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task2_$method_name.txt
+grep 'MSS = 300 ' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $6, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task2_$method_name.txt
+grep 'MSS = 400 ' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $6, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task2_$method_name.txt
+grep 'MSS = 500 ' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $6, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task2_$method_name.txt
+grep 'MSS = 600 ' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $6, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task2_$method_name.txt
+grep 'MSS = 700 ' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $6, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task2_$method_name.txt
+grep 'MSS = 800 ' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $6, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task2_$method_name.txt
+grep 'MSS = 900 ' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $6, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task2_$method_name.txt
+grep 'MSS = 1000 ' temp | awk '{sum+=$9; sumsq+=$9*$9} END {print $6, sum/NR, sum/NR - 2.776 * sqrt(sumsq/NR - (sum/NR)**2) / sqrt(NR), sum/NR + 2.776 * sqrt(sumsq/NR - (sum/NR)**2)/ sqrt(NR)}' >> results_task2_$method_name.txt

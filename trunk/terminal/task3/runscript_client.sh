@@ -12,9 +12,15 @@ else
     server_ip=$1
     server_port=7735
     method=$3
-    rm -f results_task3_${method}
-    rm -f temp_${method}_${2}
+    method_name="gobackn"
+    if [ $method -eq 1 ]
+      then
+        method_name="selrepeat"
+    fi
 
+    rm -f results_task3_${method_name}.txt
+    rm -f temp_${method}_${2}
+   
     for ((i=1; i<=5; i++)) do
         echo 'Run ' $i
         java -classpath ../bin edu.ncsu.csc573.project2.client.Client $server_ip $server_port ../resources/rfc/rfc1mb.txt 64 500 $method >> output
