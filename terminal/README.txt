@@ -30,6 +30,31 @@ PURPOSE
               was approximately 25 ms.
 
               Hence we set our RTO (Retransmission Timeout) = 2 * RTT (Round-Trip Time).
+
+DIRECTORY STRUCTURE :
+
+    proj2/
+    |
+    |----->resources/
+    |       |
+    |       |---->rfc/
+    |
+    |----->src/
+    |
+    |----->task1/
+    |
+    |----->task2/
+    |
+    |----->task3/
+    |
+    |----->tex/
+    |
+    |----->Makefile
+    |
+    |----->proj_visuals.m
+    |
+    |----->README.txt
+
 BUILD
 
     This project has a Makefile incldued in the base directory. Follow the following 
