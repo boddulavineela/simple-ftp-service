@@ -22,7 +22,7 @@ PURPOSE
     We report the mean values and the confidence intervals (estimated using the 
     t-distribution) as part of our results. We also attempt to explain the behavior 
     observed using the IP/UDP and sliding window concepts learnt as part of this 
-    course.
+    course. The results are included in the document "proj2_tasks.pdf".
 
     TIMEOUT : We use a timeout period of 50 ms for our experiments. Our experimental 
               setup consisted of two remote hosts on the same private network but 
@@ -52,6 +52,8 @@ DIRECTORY STRUCTURE :
     |----->Makefile
     |
     |----->proj_visuals.m
+    |
+    |----->proj2_tasks.pdf
     |
     |----->README.txt
 
