@@ -1,7 +1,7 @@
 CSC 573 PROJECT 2 - Simple FTP Service
 
-AUTHORS : Saurabh V. Pendse (svpendse@ncsu.edu)
-          Ashish J. Sharma (ajsharma@ncsu.edu)
+AUTHORS : Saurabh V. Pendse (svpendse@ncsu.edu, ID : 001026185)
+          Ashish J. Sharma (ajsharma@ncsu.edu, ID : 001043115)
 
 PURPOSE
 
