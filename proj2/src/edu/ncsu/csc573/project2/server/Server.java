@@ -62,7 +62,7 @@ public class Server {
         int low = 0, high = 0;
         //Server operation code
         while (true) {
-            //Get the MSS from the client
+            //Get the window size N and the filesize from the client
             try {
                 recvBuffer = new byte[Constants.kMaxBufferSize];
                 ServerSocket serverSocket = new ServerSocket(1234);

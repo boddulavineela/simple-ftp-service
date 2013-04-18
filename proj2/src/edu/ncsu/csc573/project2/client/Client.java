@@ -160,7 +160,7 @@ public class Client {
             System.err.println("Failed to get server by hostname");
         }
 
-        //Send the window size N to the server
+        //Send the window size N and the filesize to the server
         try {
             Socket mssSocket = new Socket(serverHostName, 1234);
             DataOutputStream dos = new DataOutputStream(mssSocket.getOutputStream());
@@ -237,7 +237,6 @@ public class Client {
     }
 
     public void sendDataGoBackN() {
-
         //Send the window size N to the server
         try {
             Socket mssSocket = new Socket(serverHostName, 1234);
