@@ -114,6 +114,7 @@ public class Server {
                             fos.flush();
                             fos.close();
                             Segment.setSequenceCounter(0);
+                            System.out.println("File received at server, stored at :" + fileName);
                             break;
                         }
                         float random = (float)Math.random();
@@ -226,7 +227,7 @@ public class Server {
                             this.isFirstPacket = true;
                             fos.flush();
                             fos.close();
-                            
+                            System.out.println("File received at server, stored at :" + fileName);
                             //Reset the segments array
                             segments = new Segment[100];
                             for (int i = 0; i < segments.length; ++i) {
