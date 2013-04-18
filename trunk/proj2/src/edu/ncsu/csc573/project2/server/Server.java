@@ -30,6 +30,7 @@ public class Server {
     //int mss;
     int n;      //The receiver window size (Selective Repeat)
     int method;     //The transfer method (0 - Go Back N, 1 - Sel. Repeat)
+    long filesize;   //The size of the incoming file
     Segment segments[];
     FileOutputStream fos;
     boolean isFirstPacket;
@@ -67,11 +68,8 @@ public class Server {
                 ServerSocket serverSocket = new ServerSocket(1234);
                 Socket mssSocket = serverSocket.accept(); 
                 DataInputStream dis = new DataInputStream(mssSocket.getInputStream()); 
-                /*for (int i = 0; i < data.length; ++i) {
-                    System.out.print(data[i] + " ");
-                }
-                System.out.println();*/
                 this.n = dis.readInt();
+                this.filesize = dis.readLong();
                 dis.close();
                 mssSocket.close();
                 serverSocket.close();
@@ -88,6 +86,7 @@ public class Server {
                 e.printStackTrace();
             }
             recvBuffer = new byte[Constants.kMaxBufferSize];
+            
             //Resize the send and receive buffers
             int seqNumber = 0;
             while (true) {
@@ -106,8 +105,6 @@ public class Server {
                     System.arraycopy(receivePacket.getData(), 0, packetData, 0, receivePacket.getLength());
                     Segment recvSegment = Segment.parseFromBytes(packetData);
                     recvSegment.setAcknowledged(false);
-                    //System.out.println("Self : " + InetAddress.getLocalHost().getHostAddress());
-                    //System.out.println("Remote : " + receivePacket.getAddress().getHostAddress());;
                     char checksum = recvSegment.calculateChecksum(recvSegment, receivePacket.getAddress().getAddress(), InetAddress.getLocalHost().getAddress());
                     if (checksum + recvSegment.getHeader().getChecksum() != 0xFFFF) {
                         System.out.println("Checksum failed. Discarding segment " + recvSegment.getHeader().getSequence_number());
@@ -120,7 +117,6 @@ public class Server {
                             break;
                         }
                         float random = (float)Math.random();
-                        //System.out.println(this.p + " " + random);
                         if (random < this.p) {
                             System.out.println("Packet loss, sequence number = " + recvSegment.getHeader().getSequence_number());
                         } else {
@@ -133,20 +129,8 @@ public class Server {
                                 serverSocket.send(sendPacket);
 
                             } else if (seqNumber == low) {
-
-                                //System.out.println("seqNumber : " + seqNumber + " low : " + low + " high : " + high);
                                 segments[seqNumber - low] = recvSegment;
                                 segments[seqNumber - low].setAcknowledged(false);
-                                
-                                /*System.out.print("Window : ");
-                                for (int i = 0; i < segments.length; ++i) {
-                                    if (segments[i] == null) {
-                                        System.out.print("-1 ");
-                                    } else {
-                                        System.out.print(segments[i].getHeader().getSequence_number() + " ");
-                                    }
-                                }
-                                System.out.println();*/
                                 
                                 Segment sendSegment = new Segment(seqNumber, Constants.kAckType, (char) 0, null);
                                 checksum = sendSegment.calculateChecksum(sendSegment, receivePacket.getAddress().getAddress(), InetAddress.getLocalHost().getAddress());
@@ -158,7 +142,17 @@ public class Server {
                                 for (int i = 0; i < segments.length; ++i) {
                                     if (segments[0] != null) {
                                         byte segmentData[] = segments[0].getData();
-                                        fos.write(new String(segmentData).replaceAll("" + (char)26, "").getBytes());
+                                        if (filesize < segmentData.length) {
+                                            byte newSegmentData[] = new byte[(int)filesize];
+                                            for (int j = 0; j < filesize; ++j) {
+                                                newSegmentData[j] = segmentData[j];
+                                            }
+                                            fos.write(newSegmentData);
+                                            filesize -= filesize;
+                                        } else {
+                                            fos.write(segmentData);
+                                            filesize -= segmentData.length;
+                                        }
                                         for (int j = 1; j < segments.length; ++j) {
                                             segments[j - 1] = segments[j]; 
                                             segments[j] = null;
@@ -172,8 +166,6 @@ public class Server {
                             } else if (seqNumber < high) {
                                 segments[seqNumber - low] = recvSegment;
                                 segments[seqNumber - low].setAcknowledged(false);
-                                
-                                //System.out.println("seqNumber : " + seqNumber + " low : " + low + " high : " + high);
                                 Segment sendSegment = new Segment(seqNumber, Constants.kAckType, (char) 0, null);
                                 checksum = sendSegment.calculateChecksum(sendSegment, receivePacket.getAddress().getAddress(), InetAddress.getLocalHost().getAddress());
                                 sendSegment.getHeader().setChecksum((char)((~checksum) & 0xFFFF));
@@ -189,24 +181,25 @@ public class Server {
                 }
             }
         }     
-  
     }
 
     public void receiveDataGoBackN() {
         //Server operation code
         while (true) {
-            //Get the MSS from the client
-            /*try {
-                recvBuffer = new byte[Constants.kMaxBufferSize];
-                DatagramPacket mssPacket = new DatagramPacket(recvBuffer, recvBuffer.length);
-                serverSocket.receive(mssPacket);
-                String mssString = new String(mssPacket.getData());
-                this.mss = Integer.parseInt(mssString.trim());
-                //System.out.println("Received MSS = " + mss);
+            //Get the filesize from the client
+            try {
+              ServerSocket serverSocket = new ServerSocket(1234);
+              Socket mssSocket = serverSocket.accept(); 
+              DataInputStream dis = new DataInputStream(mssSocket.getInputStream()); 
+              this.filesize = dis.readLong();
+              dis.close();
+              mssSocket.close();
+              serverSocket.close();
             } catch (Exception e) {
                 e.printStackTrace();
-            }*/
+            }
             recvBuffer = new byte[Constants.kMaxBufferSize];
+            
             //Resize the send and receive buffers
             int seqNumber = 0;
             while (true) {
@@ -224,8 +217,6 @@ public class Server {
                     byte packetData[] = new byte[receivePacket.getLength()];
                     System.arraycopy(receivePacket.getData(), 0, packetData, 0, receivePacket.getLength());
                     Segment recvSegment = Segment.parseFromBytes(packetData);
-                    //System.out.println("Self : " + InetAddress.getLocalHost().getHostAddress());
-                    //System.out.println("Remote : " + receivePacket.getAddress().getHostAddress());;
                     char checksum = recvSegment.calculateChecksum(recvSegment, receivePacket.getAddress().getAddress(), InetAddress.getLocalHost().getAddress());
                     if (checksum + recvSegment.getHeader().getChecksum() != 0xFFFF) {
                         System.out.println("Checksum failed. Discarding segment " + recvSegment.getHeader().getSequence_number());
@@ -235,33 +226,6 @@ public class Server {
                             this.isFirstPacket = true;
                             fos.flush();
                             fos.close();
-                            /*int fileDataLength = 0;
-                            for (int i = 0; i < (seqNumber + 1); ++i) {
-                                fileDataLength += segments[i].getData().length;
-                            }
-                            
-                            byte fileData[] = new byte[fileDataLength];
-                            int counter = 0;
-                            for (int i = 0; i < (seqNumber + 1); ++i) {
-                                if (segments[i] == null) {
-                                    System.out.println("Index " + i + " is null");
-                                } else {
-                                    byte segmentData[] = segments[i].getData();
-                                    for (int j = 0; j < segments[i].getData().length; ++j) {
-                                        fileData[counter++] = segmentData[j];
-                                    }
-                                }
-                            }
-                            //System.out.println(new String(fileData).trim());
-                            
-                            //Write the file to the specified filename
-                            try {
-                                FileOutputStream fos = new FileOutputStream(new File(fileName));
-                                fos.write(new String(fileData).trim().getBytes());
-                                fos.close();
-                            } catch (Exception e) {
-                                System.err.println("Failed to write to the specified file.");
-                            }*/
                             
                             //Reset the segments array
                             segments = new Segment[100];
@@ -286,8 +250,7 @@ public class Server {
                             }
                             
                             if (seqNumber == 0 || (seqNumber > 0 && segments[seqNumber - 1] != null && segments[seqNumber - 1].isAcknowledged())) {
-                                //System.out.println("Received : " + recvSegment.getHeader().getSequence_number() + " Acknowledged : " + recvSegment.isAcknowledged());
-                              
+                                
                                 //Send the acknowledgement
                                 Segment sendSegment = new Segment(recvSegment.getHeader().getSequence_number(), Constants.kAckType, (char) 0, null);
                                 checksum = sendSegment.calculateChecksum(sendSegment, receivePacket.getAddress().getAddress(), InetAddress.getLocalHost().getAddress());
@@ -296,20 +259,24 @@ public class Server {
                                 
                                 serverSocket.send(sendPacket);
                                 
-                                //System.out.println("Sent acknowledgement for segment : " + sendSegment.getHeader().getSequence_number());
                                 recvSegment.setAcknowledged(true);
                                 
                                 if (segments[seqNumber] == null) {
                                     segments[seqNumber] = recvSegment;
                                     //Write the segment to the file
                                     byte segmentData[] = recvSegment.getData();
-                                    fos.write(new String(segmentData).replaceAll("" + (char)26, "").getBytes());
- 
+                                    if (filesize < segmentData.length) {
+                                        byte newSegmentData[] = new byte[(int)filesize];
+                                        for (int j = 0; j < filesize; ++j) {
+                                            newSegmentData[j] = segmentData[j];
+                                        }
+                                        fos.write(newSegmentData);
+                                        filesize -= filesize;
+                                    } else {
+                                        fos.write(segmentData);
+                                        filesize -= segmentData.length;
+                                    }
                                 }
-                                //Duplicate packets. Just discard.
-                                //else {
-                                //    System.out.println("Duplicate packet : " + seqNumber);
-                                //}
                             } else {
                                 //Send last acknowledgement for last received segment
                                 int ackSeqNumber = seqNumber - 1;
