@@ -87,9 +87,9 @@ RUN
                          Repeat.
 
     To run the client, execute the command : 
-        java -classpath bin/ edu.ncsu.csc573.project2.client.Client <server-ip> <server-port#> <file-name> <N> <MSS> [<method>]
+        java -classpath bin/ edu.ncsu.csc573.project2.client.Client <server-host-name> <server-port#> <file-name> <N> <MSS> [<method>]
 
-        <server-ip> - The server host name.
+        <server-host-name> - The server IP Address.
         <server-port#> - The server port number (7735, for this project).
         <file-name> - The path (absolute or relative) to the file name. 
         <N> - The window size.
