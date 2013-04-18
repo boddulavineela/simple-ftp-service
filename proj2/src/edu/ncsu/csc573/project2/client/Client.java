@@ -118,16 +118,16 @@ public class Client {
             }
             byte segmentData[] = new byte[mss - Constants.kSegmentHeaderSize];
             for (int i = 0; i < segmentData.length; ++i) {
-                segmentData[i] = 26;    //EOF
+                segmentData[i] = 0;    //EOF
             }
             int count = 0;
-            byte nextByte = -1;
+            int nextByte = -1;
             while (count < segmentData.length) {
                 nextByte = rdt_send();
-                if (nextByte == -1) {
+                if (nextByte == -1) {   //EOF
                     break;
                 }
-                segmentData[count++] = nextByte;
+                segmentData[count++] = (byte)nextByte;
             }
             segment = new Segment(Constants.kDataType, (char)0, segmentData);
             remainingLength -= (mss - Constants.kSegmentHeaderSize);
@@ -137,10 +137,10 @@ public class Client {
         return segment; 
     }
 
-    private byte rdt_send() {
-        byte nextByte = -1;
+    private int rdt_send() {
+        int nextByte = -1;
         try {
-            nextByte = (byte) fis.read();
+            nextByte = fis.read();
         } catch (Exception e) {
             System.err.println("Error reading data from file");
             return -1;
@@ -165,20 +165,20 @@ public class Client {
             Socket mssSocket = new Socket(serverHostName, 1234);
             DataOutputStream dos = new DataOutputStream(mssSocket.getOutputStream());
             dos.writeInt(n);
-            /*for (int i = 0; i < data.length; ++i) {
-                System.out.print(data[i] + " ");
-            }
-            System.out.println();*/
+            dos.writeLong(remainingLength);
             dos.close();
             mssSocket.close();
         } catch (Exception e) {
-            System.err.println("Could not send n to the server");
+            e.printStackTrace();
+            System.err.println("Could not send n and filesize to the server");
         }
+
         //Initialize the first window
         for (int i = low; i < high; ++i) {
             Segment segment = readNextSegment();
             window.add(segment);
         }
+
         //Send the first window
         for (int i = low; i < high; ++i) {
             this.sendSegment(window.get(i));
@@ -186,32 +186,14 @@ public class Client {
         int sentCount = 0; 
         while (sentCount < numSegments) {
             try {
-                //System.out.println("Outside Low : " + low + " , High : " + high);
                 Segment segment = this.receiveSegment();
                 if (segment != null) { 
-                    /*System.out.println("Received acknowledgement for segment : " + segment.getHeader().getSequence_number());
-                    System.out.print("Window : ");
-                    for (int i = 0; i < window.size(); ++i) {
-                        System.out.print(window.get(i).getHeader().getSequence_number());
-                        if (window.get(i).isAcknowledged()) {
-                            System.out.print("t");
-                        } else {
-                            System.out.print("f");
-                        }
-                        System.out.print(" ");
-                    }
-                    System.out.println();*/
-
                     int ack_segment = segment.getHeader().getSequence_number();
-                    
-                    //System.out.println("low : " + low + " numSegments - 1 : " + (numSegments - 1));
                     if (low <= numSegments - 1) {
                          if (ack_segment < low) {
                          } else if (ack_segment == low) {
-                             //System.out.println("Setting segment : " + window.getFirst().getHeader().getSequence_number() + " = true");
                              window.getFirst().setAcknowledged(true);
                              sentCount++;
-                             //System.out.println("sentCount : " + sentCount);
                              if (high <= numSegments - 1) {                            
                                  for (int i = 0; i < window.size(); ++i) {
                                      if (! window.get(0).isAcknowledged()) {
@@ -222,45 +204,27 @@ public class Client {
                                      if (nextSegment != null) {
                                          window.add(nextSegment);
                                          this.sendSegment(nextSegment);
-                                         //System.out.println("Sending segment : " + nextSegment.getHeader().getSequence_number() + " low : " + low + " high : " +high);
                                          low++;
                                          high++;
                                      } else {
-                                         //System.out.println("Last window, low : " + low + " high : " + high);
                                          low++;
                                      }
                                  }
                              }
-                             //System.out.println("high : " + high + " numSegments - 1 : " + (numSegments - 1));
                          } else if (ack_segment < high) {
-                             //System.out.println("ack_segment : " + ack_segment + " " + "low : " + low + " high : " + high);
                              sentCount++;
-                             //System.out.println("sentCount : " + sentCount);
-                             //System.out.println("Setting segment : " + window.get(ack_segment - low).getHeader().getSequence_number() + " = true");
                              window.get(ack_segment - low).setAcknowledged(true);
-                             //System.out.println("Setting segment : " + window.get(ack_segment - low).getHeader().getSequence_number() + " = true");
                          }
-                        //if (low > segment.getHeader().getSequence_number()) {
-                        //    System.out.println("Cummulative acknowledgement occurred");
-                        //}
-                        //System.out.println("low : " + low + " sequence umber = " + segment.getHeader().getSequence_number());
                      }
                 }
-                /*for (int i = 0; i < window.size(); ++i) {
-                    System.out.print(window.get(i).getHeader().getSequence_number() + " ");
-                }
-                System.out.println();*/
             } catch (SocketTimeoutException se) {
                 //A timeout occurred
                 System.out.println("Timeout, sequence number = " + window.peek().getHeader().getSequence_number());
                 for (int i = 0; i < window.size(); ++i) {
-                    //System.out.println("window.get("+ i + ").isAcknowledged() = " + window.get(i).isAcknowledged());
                     if (window.get(i) != null && ! window.get(i).isAcknowledged()) {
                         this.sendSegment(window.get(i));
-                        //System.out.println("Retransmitting : " + window.get(i).getHeader().getSequence_number());
                     }
                 }
-                //System.out.println();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -273,6 +237,19 @@ public class Client {
     }
 
     public void sendDataGoBackN() {
+
+        //Send the window size N to the server
+        try {
+            Socket mssSocket = new Socket(serverHostName, 1234);
+            DataOutputStream dos = new DataOutputStream(mssSocket.getOutputStream());
+            dos.writeLong(remainingLength);
+            dos.close();
+            mssSocket.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Could not send filesize to the server");
+        }
+
         //System.out.println("Number of segments = " + segments.size());
         boolean sent[] = new boolean[numSegments];
         for (int i = 0; i < sent.length; ++i) {
@@ -288,16 +265,6 @@ public class Client {
             System.err.println("Failed to get server by hostname");
         }
         
-        //Send the MSS to the server
-        /*String mssString = "" + mss;
-        try {
-            DatagramPacket mssPacket = new DatagramPacket(mssString.getBytes(), mssString.length(), IPAddress, serverPortNumber);
-
-            clientSocket.send(mssPacket);
-        } catch (Exception e) {
-            System.err.println("Could not send MSS to the server");
-        }*/
-
         //Send the segments to the server using the Go Back N protocol
 
         //Initialize the first window
@@ -313,23 +280,10 @@ public class Client {
        
         while (! sent[sent.length - 1]) {
             try {
-                //System.out.println("Outside Low : " + low + " , High : " + high);
                 Segment segment = this.receiveSegment();
                 if (segment != null) { 
-                    //System.out.println("Received acknowledgement for segment : " + segment.getHeader().getSequence_number());
-                     //if (low == segment.getHeader().getSequence_number() && low <= segments.size() - 1) {
-
                      //Cummulative acknowledgements
                      if (low <= numSegments - 1) {
-                        /*if (low < segment.getHeader().getSequence_number()) {
-                            System.out.println("Cummulative acknowledgement occurred");
-                        }*/
-                        /*System.out.print("Window : ");
-                        for (int i = 0; i < window.size(); ++i) {
-                            System.out.print(window.get(i).getHeader().getSequence_number() + " ");
-                        } 
-                        System.out.println();*/
-                        //System.out.println("low : " + low + " sequence umber = " + segment.getHeader().getSequence_number());
                         int cnt = low;
                         for (;cnt <= segment.getHeader().getSequence_number(); ++cnt) {
                             window.removeFirst();
@@ -338,96 +292,17 @@ public class Client {
                             if (high <= numSegments - 1) {
                                 Segment nextSegment = readNextSegment();
                                 window.add(nextSegment);
-                                //System.out.println("Sending segment : " + nextSegment.getHeader().getSequence_number());
                                 this.sendSegment(nextSegment);
                                 high++;
                             }
                         }
                     }
                 }
-                /*for (int i = 0; i < window.size(); ++i) {
-                    System.out.print(window.get(i).getHeader().getSequence_number() + " ");
-                }
-                System.out.println();*/
             } catch (SocketTimeoutException se) {
                 //A timeout occurred
                 System.out.println("Timeout, sequence number = " + window.peek().getHeader().getSequence_number());
                 for (int i = 0; i < window.size(); ++i) {
                     this.sendSegment(window.get(i));
-                    //System.out.print(window.get(i).getHeader().getSequence_number());
-                }
-                //System.out.println();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        
-        Segment finSegment = new Segment(Constants.kFinType, (char)0, null);
-        this.sendSegment(finSegment);
-        clientSocket.close();
-    }
-  
-
-    
-    public void sendData(LinkedList<Segment> segments) {
-        //System.out.println("Number of segments = " + segments.size());
-        boolean sent[] = new boolean[segments.size()];
-        for (int i = 0; i < sent.length; ++i) {
-            sent[i] = false;
-        }
-        int low = 0;
-        int high = Math.min(segments.size(), n);
-        IPAddress = null;
-        try {
-            IPAddress = InetAddress.getByName(serverHostName);
-        } catch (Exception e) {
-            
-        }
-        //Send the MSS to the server
-        String mssString = "" + mss;
-        try {
-            DatagramPacket mssPacket = new DatagramPacket(mssString.getBytes(), mssString.length(), IPAddress, serverPortNumber);
-
-            clientSocket.send(mssPacket);
-        } catch (Exception e) {
-            System.err.println("Could not send MSS to the server");
-        }
-        //Send the segments to the server using the Go Back N protocol
-
-        //Send the first window
-        for (int i = low; i < high; ++i) {
-            this.sendSegment(segments.get(i));
-        }
-       
-        while (! sent[sent.length - 1]) {
-            try {
-                //System.out.println("Outside Low : " + low + " , High : " + high);
-                Segment segment = this.receiveSegment();
-                if (segment != null) { 
-                    //System.out.println("Received acknowledgement for segment : " + segment.getHeader().getSequence_number());
-                     //if (low == segment.getHeader().getSequence_number() && low <= segments.size() - 1) {
-
-                     //Cummulative acknowledgements
-                     if (low <= segments.size() - 1) {
-                        //if (low > segment.getHeader().getSequence_number()) {
-                        //    System.out.println("Cummulative acknowledgement occurred");
-                        //}
-                        int cnt = low;
-                        for (;cnt <= segment.getHeader().getSequence_number(); ++cnt) {
-                            sent[low] = true;
-                            low++;
-                            if (high <= segments.size() - 1) {
-                                this.sendSegment(segments.get(high));
-                                high++;
-                            }
-                        }
-                    }
-                }
-            } catch (SocketTimeoutException se) {
-                //A timeout occurred
-                System.out.println("Timeout, sequence number = " + segments.get(low).getHeader().getSequence_number());
-                for (int i = low; i < high; ++i) {
-                    this.sendSegment(segments.get(i));
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -438,18 +313,15 @@ public class Client {
         this.sendSegment(finSegment);
         clientSocket.close();
     }
-
+     
     public void sendSegment(Segment segment) {
       try {
-            //System.out.println("Self : " + InetAddress.getLocalHost().getHostAddress());
-            //System.out.println("Remote : " + IPAddress.getHostAddress());
             char checksum = segment.calculateChecksum(segment, InetAddress.getLocalHost().getAddress(), IPAddress.getAddress());
             segment.getHeader().setChecksum((char)((~checksum) & 0xFFFF));
             DatagramPacket sendPacket = new DatagramPacket(segment.getSegment(),
                                                            segment.getSegment().length, 
                                                            IPAddress, serverPortNumber);
             clientSocket.send(sendPacket);
-            //System.out.println ("Segment " + segment.getHeader().getSequence_number() + " sent");
         } catch (Exception e ) {
             e.printStackTrace();
         }    
@@ -478,7 +350,6 @@ public class Client {
 
             char checksum = segment.calculateChecksum(segment, InetAddress.getByName("10.139.60.135").getAddress(), InetAddress.getLocalHost().getAddress());
             segment.getHeader().setChecksum((char)((~checksum) & 0xFFFF));
-            //segment.getHeader().setChecksum((char)checksum);
             System.out.println(segment.toString());
             DatagramPacket packet = new DatagramPacket(segment.getSegment(), segment.getSegment().length, InetAddress.getByName("10.139.60.135"), 7734);
             clientSocket.send(packet);

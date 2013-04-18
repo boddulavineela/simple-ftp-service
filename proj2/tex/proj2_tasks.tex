@@ -129,7 +129,7 @@ As stated earlier, the transmission time is not just the function of the loss pr
 		
 	The main difference between Selective-Repeat and Go-Back-N is that Go-Back-N uses cumulative ACK whereas Selective-Repeat sends ACK for each frame it receives~\cite{tanenbaum2002}.  For example, if frames 1, 2, 3 and 4 were sent and frame 3 was lost, a receiver using Go-Back-N would send a cumulative ACK for frames up to frame 2. This means even if frame 4 was received, the sender would send it again as it has received cumulative ACK for frames only up to frame 2. However, if for the same scenario, a receiver uses the Selective-Repeat technique, it would send individual ACKs for frame 1, 2 and 4 and would store frame 4 in its buffer until frame 3 is retransmitted by the sender. When the sender does not receive an ACK for frame 3, it sends frame 3 again.
  
-	The effect of the missing multiple transmissions of the same frame when using Selective-Repeat is evident from the graph above. As with Go-Back-N, when window size is small, the timeouts cause retransmissions and hence the transfer time is greater. However, as the window size increases, unlike Go-Back-N, the transmission time decreases as Selective-Repeat does not support cumulative ACKs and hence there are no duplicate transmissions. These theoretical assumptions have been justified by the simulation results plotted in the graph shown above.
+	The effect of the missing multiple transmissions of the same frame when using Selective-Repeat is evident from the graph above. As with Go-Back-N, when window size is small, the timeouts cause retransmissions and hence the transfer time is greater. However, as the window size increases, unlike Go-Back-N, the transmission time decreases as Selective-Repeat does not support cumulative ACKs and hence there are no duplicate transmissions. This is justified by the simulation results plotted in the graph shown above.
 
 	\subsection{Task 2}
 	\label{subsec:task2selrepeat}
@@ -181,20 +181,20 @@ As stated earlier, the transmission time is not just the function of the loss pr
         \begin{subfigure}[b]{0.48\linewidth}
                 \centering
                 \includegraphics[width=\linewidth]{../task1/figure_task1_combined.eps}
-                \caption{Average Transfer Time (sec) vs Window Size (N) for Go Back N and Selective Repeat Strategies.}
+                \caption{Average Transfer Time (sec) vs Window Size (N) for Go Back N and Selective Repeat.}
                 \label{fig:task1combined}
         \end{subfigure}
         \begin{subfigure}[b]{0.48\linewidth}
                 \centering
                 \includegraphics[width=\linewidth]{../task2/figure_task2_combined.eps}
-                \caption{Average Transfer Time (sec) vs Maximum Segment Size (MSS) for Go Back N and Selective Repeat Strategies.}
+                \caption{Average Transfer Time (sec) vs Maximum Segment Size (MSS) (Bytes) for Go Back N and Selective Repeat.}
                 \label{fig:task2combined}
         \end{subfigure}
         \vspace{25pt}
         \begin{subfigure}[b]{0.48\linewidth}
                 \centering
                 \includegraphics[width=\linewidth]{../task3/figure_task3_combined.eps}
-                \caption{Average Transfer Time (sec) vs Loss Probability (p) for Go Back N and Selective Repeat Strategies.}
+                \caption{Average Transfer Time (sec) vs Loss Probability (p) for Go Back N and Selective Repeat.}
                 \label{fig:task3combined}
         \end{subfigure}
 \caption{Combined Results for Tasks 1, 2 and 3.}
