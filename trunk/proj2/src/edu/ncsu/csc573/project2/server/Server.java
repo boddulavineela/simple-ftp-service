@@ -83,7 +83,7 @@ public class Server {
                 low = 0;
                 high = n;
             } catch (Exception e) {
-                e.printStackTrace();
+                System.out.println("Unable to get n and filesize from the client.");
             }
             recvBuffer = new byte[Constants.kMaxBufferSize];
             
@@ -196,7 +196,7 @@ public class Server {
               mssSocket.close();
               serverSocket.close();
             } catch (Exception e) {
-                e.printStackTrace();
+                System.out.println("Unable to get filesize from the client.");
             }
             recvBuffer = new byte[Constants.kMaxBufferSize];
             
