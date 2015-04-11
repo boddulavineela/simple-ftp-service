@@ -1,0 +1,1 @@
+An FTP service implemented over UDP ensuring reliability in the application layer using the Go-back-N automatic repeat request (ARQ) and the Selective Repeat ARQ protocols.
